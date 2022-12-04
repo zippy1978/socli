@@ -1,0 +1,13 @@
+query GetAllTokensNBA($size: Int,$cursor: String){
+  tokens{
+    allNfts(sport:NBA, first: $size, after: $cursor){
+      pageInfo{
+        endCursor
+        hasNextPage
+      }
+      nodes {
+        slug       
+      }
+    }
+  }
+}

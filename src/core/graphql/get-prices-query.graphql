@@ -1,0 +1,11 @@
+query GetPrices($slug: String!){
+  
+    tokens {
+    
+    tokenPrices(playerSlug: $slug, rarity: limited, collection: NBA) {
+        amountInFiat{eur, usd}
+        date
+    }
+    
+    }
+}
