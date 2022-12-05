@@ -12,7 +12,7 @@ use socli::{
 };
 use tui::{backend::CrosstermBackend, Terminal};
 
-/// Simple program to greet a person
+/// SoCli - A Sorare NBA 🏀 CLI
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {

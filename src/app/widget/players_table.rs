@@ -2,7 +2,7 @@ use tui::{
     backend::Backend,
     layout::{Constraint, Rect},
     style::{Color, Modifier, Style},
-    widgets::{Block, Borders, Cell, Row, Table, TableState},
+    widgets::{Block, BorderType, Borders, Cell, Row, Table, TableState},
     Frame,
 };
 
@@ -88,7 +88,13 @@ impl Renderable for PlayersTable {
                     }),
                     // Last Games Scores
                     Cell::from(match last_game_scores {
-                        Some(s) => format!("{}", s.iter().map(|v| format!("{}", v)).collect::<Vec<String>>().join("-")),
+                        Some(s) => format!(
+                            "{}",
+                            s.iter()
+                                .map(|v| format!("{}", v))
+                                .collect::<Vec<String>>()
+                                .join("-")
+                        ),
                         None => "-".to_string(),
                     }),
                     // Last Games Played
@@ -151,7 +157,8 @@ impl Renderable for PlayersTable {
             .block(
                 Block::default()
                     .title("Players (⬆ & ⬇)")
-                    .borders(Borders::ALL),
+                    .borders(Borders::ALL)
+                    .border_type(BorderType::Rounded),
             )
             // Columns widths are constrained in the same way as Layout...
             .widths(&[

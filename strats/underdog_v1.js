@@ -1,3 +1,11 @@
+/* underdog_v1
+ * Buy decision strategy.
+ * Tries to find the best buy opportunities by relying on:
+ * - point price (weighted by last 10 games attendance)
+ * - ensure last game was played
+ * - progress between score and last game score (must be positive)
+ */
+
 const MAX_POINT_PRICE = 0.4;
 const MIN_PROGRESSION_RATIO = 0;
 
@@ -14,9 +22,6 @@ export function decide(player) {
   if (didPlayLastGame && pointPrice < MAX_POINT_PRICE && scoreProgressionRatio >= MIN_PROGRESSION_RATIO && player.stats.score > 0) {
     return {
       action: "Buy",
-      player_slug: player.slug,
-      player_name: player.display_name,
-      strategy: "underdog_v1",
       comment: `price: ${lastPrice.toFixed(2)}€, point price: ${pointPrice.toFixed(2)}€, score progression: ${(scoreProgressionRatio * 100).toFixed(2)}%`,
     };
   }

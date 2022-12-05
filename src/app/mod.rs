@@ -61,19 +61,13 @@ impl App {
                 Action::Down => self.go_down(1).await,
                 Action::PageUp => self.go_up(20).await,
                 Action::PageDown => self.go_down(20).await,
+                Action::Backspace => self.clear_decisions(),
             }
         } else {
             log::warn!("No action accociated to {}", key);
             AppReturn::Continue
         }
     }
-
-    /// We could update the app or dispatch event on tick
-    /*pub async fn update_on_tick(&mut self) -> AppReturn {
-        // here we just increment a counter
-        self.state.incr_tick();
-        AppReturn::Continue
-    }*/
 
     /// Send a network event to the IO thread
     pub async fn dispatch(&mut self, action: IoEvent) {
@@ -104,6 +98,7 @@ impl App {
             Action::Up,
             Action::PageUp,
             Action::PageDown,
+            Action::Backspace,
         ]
         .into();
         self.state = AppState::Initialized {
@@ -127,6 +122,13 @@ impl App {
                 None => (),
             }
         }
+    }
+
+    pub fn clear_decisions(&mut self) -> AppReturn{
+        if let AppState::Initialized { decisions,.. } = &mut self.state {
+            decisions.clear();
+        }
+        AppReturn::Continue
     }
 
     pub async fn refresh_players_stats(&mut self, player_slugs: &[String]) {

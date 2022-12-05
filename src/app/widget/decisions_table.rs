@@ -1,8 +1,8 @@
 use tui::{
     backend::Backend,
     layout::{Constraint, Rect},
-    style::{Color, Style},
-    widgets::{Block, Borders, Cell, Row, Table},
+    style::{Color, Modifier, Style},
+    widgets::{Block, Borders, Cell, Row, Table, BorderType},
     Frame,
 };
 
@@ -47,16 +47,28 @@ impl Renderable for DecisionsTable {
                                                                 //.bottom_margin(1),
             )
             // As any other widget, a Table can be wrapped in a Block.
-            .block(Block::default().title("Decisions").borders(Borders::ALL))
+            .block(
+                Block::default()
+                    .title("Decisions (⌫  to clear)")
+                    .borders(Borders::ALL)
+                    .border_type(BorderType::Rounded),
+            )
             // Columns widths are constrained in the same way as Layout...
             .widths(&[
                 Constraint::Percentage(10),
-                Constraint::Percentage(10),
-                Constraint::Percentage(10),
-                Constraint::Percentage(70),
+                Constraint::Percentage(20),
+                Constraint::Percentage(20),
+                Constraint::Percentage(50),
             ])
             // ...and they can be separated by a fixed spacing.
-            .column_spacing(1);
+            .column_spacing(1)
+            .highlight_style(
+                Style::default()
+                    .add_modifier(Modifier::BOLD)
+                    .fg(Color::White),
+            )
+            // ...and potentially show a symbol in front of the selection.
+            .highlight_symbol(" ⛹️  ");
 
         f.render_widget(table, area)
     }

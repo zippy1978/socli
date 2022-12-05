@@ -1,8 +1,6 @@
 use tui::{
     backend::Backend,
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{Color, Style},
-    widgets::{Block, BorderType, Borders, Paragraph},
+    layout::{Constraint, Direction, Layout, Rect},
     Frame,
 };
 
@@ -10,7 +8,7 @@ use super::{
     state::AppState,
     widget::{
         decisions_table::DecisionsTable, logs_panel::LogsPanel, players_table::PlayersTable,
-        Renderable,
+        Renderable, header::Header,
     },
     App,
 };
@@ -36,7 +34,8 @@ where
         .direction(Direction::Vertical)
         .constraints(
             [
-                Constraint::Length(3),
+                Constraint::Length(1),
+                Constraint::Length(1),
                 Constraint::Percentage(40),
                 Constraint::Percentage(40),
                 Constraint::Length(12),
@@ -45,9 +44,9 @@ where
         )
         .split(size);
 
-    // Title
-    let title = draw_title();
-    rect.render_widget(title, chunks[0]);
+    // Header
+    let mut header = Header {};
+    header.render(rect, chunks[0]);
 
     // Players table
     let mut player_table = if let AppState::Initialized {
@@ -60,7 +59,7 @@ where
     } else {
         PlayersTable::new(vec![], None)
     };
-    player_table.render(rect, chunks[1]);
+    player_table.render(rect, chunks[2]);
 
     // Decisions
     let mut decisons_table = if let AppState::Initialized {
@@ -72,21 +71,10 @@ where
     } else {
         DecisionsTable::new(vec![])
     };
-    decisons_table.render(rect, chunks[2]);
+    decisons_table.render(rect, chunks[3]);
 
     // Logs
     let mut logs_panel = LogsPanel {};
-    logs_panel.render(rect, chunks[3]);
+    logs_panel.render(rect, chunks[4]);
 }
 
-fn draw_title<'a>() -> Paragraph<'a> {
-    Paragraph::new("SoCli - Sorare CLI")
-        .style(Style::default().fg(Color::LightCyan))
-        .alignment(Alignment::Center)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .style(Style::default().fg(Color::White))
-                .border_type(BorderType::Plain),
-        )
-}

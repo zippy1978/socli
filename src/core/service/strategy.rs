@@ -1,10 +1,18 @@
-use std::{fmt::Display, path::PathBuf, fs};
+use std::{
+    fmt::Display,
+    fs,
+    path::{Path, PathBuf},
+};
 
 use async_trait::async_trait;
+use regex::Regex;
 use rquickjs::{Context, Function, Module, Runtime};
 
 use crate::core::{
-    model::{decision::Decision, player::Player},
+    model::{
+        decision::{Decision, ScriptDecision},
+        player::Player,
+    },
     repository::error::RepoError,
 };
 
@@ -53,7 +61,12 @@ impl StrategyServiceImpl {
         }
     }
 
-    async fn run(&self, player: &Player, code: &str) -> Result<Option<Decision>, StrategyError> {
+    async fn run(
+        &self,
+        player: &Player,
+        strategy_name: &str,
+        code: &str,
+    ) -> Result<Option<Decision>, StrategyError> {
         // If missing player prices and stats: skip eval
         if player.prices.is_empty() || player.stats.is_none() {
             return Ok(None);
@@ -65,13 +78,22 @@ impl StrategyServiceImpl {
             let module = Module::new(ctx, "strategy".to_string(), code)?;
             let module = module.eval()?;
             let decide: Function = module.get("decide")?;
-            let res: Option<Decision> = decide.call((player.clone(), &player.slug))?;
+            let res: Option<ScriptDecision> = decide.call((player.clone(), &player.slug))?;
             if let Some(decision) = res {
-                Ok(Some(decision))
+                Ok(Some(decision.to_decision(&player, strategy_name)))
             } else {
                 Ok(None)
             }
         })
+    }
+
+    pub(crate) fn extract_strategy_name(&self, path: &Path) -> String {
+        let path_name = path.file_name().unwrap().to_str().unwrap().to_string();
+        let re = Regex::new(r"(.*)\.[^.]+$").unwrap();
+        let caps = re.captures(&path_name).unwrap();
+        let result = caps.get(1).map_or("", |m| m.as_str()).to_string();
+
+        result
     }
 }
 
@@ -84,14 +106,18 @@ impl StrategyService for StrategyServiceImpl {
 
         // Check if file exists
         if !scripts_path.exists() {
-            return Err(StrategyError::Config(format!("failed to access directory `{}`", &self.strategy_dir)));
+            return Err(StrategyError::Config(format!(
+                "failed to access directory `{}`",
+                &self.strategy_dir
+            )));
         }
 
         let mut decisions = vec![];
         let paths = fs::read_dir(scripts_path).unwrap();
         for path in paths {
+            let strategy_name = self.extract_strategy_name(&path.as_ref().unwrap().path());
             if let Ok(code) = fs::read_to_string(path.unwrap().path()) {
-                if let Some(decision) = self.run(player, &code).await? {
+                if let Some(decision) = self.run(player, &strategy_name, &code).await? {
                     decisions.push(decision);
                 }
             }

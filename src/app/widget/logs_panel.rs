@@ -1,6 +1,6 @@
 use tui::{
     style::{Color, Style},
-    widgets::{Block, Borders},
+    widgets::{Block, Borders, BorderType},
 };
 use tui_logger::TuiLoggerWidget;
 
@@ -19,10 +19,9 @@ impl Renderable for LogsPanel {
             .block(
                 Block::default()
                     .title("Logs")
-                    .border_style(Style::default().fg(Color::White))
+                    .border_type(BorderType::Rounded)
                     .borders(Borders::ALL),
-            )
-            .style(Style::default().fg(Color::White));
+            );
 
             f.render_widget(widget, area)
     }
