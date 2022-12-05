@@ -7,4 +7,5 @@ pub enum IoEvent {
     // Refresh TODO
     LoadPlayerDetails(String),
     LoadPlayersStats(Vec<String>),
+    RunStrategies(String),
 }

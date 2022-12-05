@@ -37,6 +37,8 @@ impl Task for LoadPlayerPricesTask {
                 // Update player in app state
                 let mut app = self.app.lock().await;
                 app.state.merge_prices(&self.slug,prices);
+                 // After update: run strategies
+                 app.run_strategies(&self.slug.clone()).await;
             }
             Err(err) => {
                 log::error!(

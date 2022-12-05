@@ -40,6 +40,7 @@ impl App {
         let state = AppState::Initialized {
             players: vec![],
             selected_player: 0,
+            decisions: vec![],
         };
 
         Self {
@@ -95,7 +96,7 @@ impl App {
         self.is_loading
     }
 
-    pub async fn initialized(&mut self, players: Vec<Player>) {
+    pub async fn initialize(&mut self, players: Vec<Player>) {
         // Update contextual actions
         self.actions = vec![
             Action::Quit,
@@ -108,6 +109,7 @@ impl App {
         self.state = AppState::Initialized {
             players,
             selected_player: 0,
+            decisions: vec![],
         };
         self.refresh_player_prices(0, false).await;
     }
@@ -129,44 +131,50 @@ impl App {
 
     pub async fn refresh_players_stats(&mut self, player_slugs: &[String]) {
         // Trigger players stats load / update
-        if let AppState::Initialized {  .. } = &self.state {
-            self.dispatch(IoEvent::LoadPlayersStats(player_slugs.to_vec())).await;
+        if let AppState::Initialized { .. } = &self.state {
+            self.dispatch(IoEvent::LoadPlayersStats(player_slugs.to_vec()))
+                .await;
+        }
+    }
+
+    pub async fn run_strategies(&mut self, player_slug: &str) {
+        if let AppState::Initialized { .. } = &self.state {
+            self.dispatch(IoEvent::RunStrategies(player_slug.to_string()))
+                .await;
         }
     }
 
     pub async fn go_up(&mut self, step: usize) -> AppReturn {
-        match &self.state {
-            AppState::Initialized {
-                players: _,
-                selected_player,
-            } => {
-                let selection = if *selected_player > step {
-                    *selected_player - step
-                } else {
-                    0
-                };
-                self.update_player_selection(selection).await;
-            }
-            _ => (),
+        if let AppState::Initialized {
+            selected_player, ..
+        } = &self.state
+        {
+            let selection = if *selected_player > step {
+                *selected_player - step
+            } else {
+                0
+            };
+            self.update_player_selection(selection).await;
         }
+
         AppReturn::Continue
     }
 
     pub async fn go_down(&mut self, step: usize) -> AppReturn {
-        match &self.state {
-            AppState::Initialized {
-                players,
-                selected_player,
-            } => {
-                let selection = if (*selected_player + step) < players.len() - 1 {
-                    *selected_player + step
-                } else {
-                    players.len() - 1
-                };
-                self.update_player_selection(selection).await;
-            }
-            _ => (),
+        if let AppState::Initialized {
+            players,
+            selected_player,
+            ..
+        } = &self.state
+        {
+            let selection = if (*selected_player + step) < players.len() - 1 {
+                *selected_player + step
+            } else {
+                players.len() - 1
+            };
+            self.update_player_selection(selection).await;
         }
+
         AppReturn::Continue
     }
 

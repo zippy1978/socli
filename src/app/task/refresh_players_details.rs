@@ -36,7 +36,8 @@ impl Task for RefreshPlayersDetailsTask {
             if let AppState::Initialized { players, .. } = &app.state {
                 let player_count = players.len();
                 if let Some(p) = players.get(index) {
-                    players_slugs_for_stats_refresh.push(p.slug.clone());
+                    let slug = p.slug.clone();
+                    players_slugs_for_stats_refresh.push(slug.clone());
                     app.refresh_player_prices(index, true).await;
                     if (index + 1) == player_count {
                         index = 0;
@@ -47,8 +48,10 @@ impl Task for RefreshPlayersDetailsTask {
                     if players_slugs_for_stats_refresh.len() == 5 {
                         
                         app.refresh_players_stats(&players_slugs_for_stats_refresh).await;
+
                         players_slugs_for_stats_refresh.clear();
                     }
+
                 }
               
             }

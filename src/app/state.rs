@@ -1,4 +1,4 @@
-use crate::core::model::{player::Player, price::Price, stats::Stats};
+use crate::core::model::{decision::Decision, player::Player, price::Price, stats::Stats};
 
 #[derive(Clone)]
 pub enum AppState {
@@ -6,6 +6,7 @@ pub enum AppState {
     Initialized {
         players: Vec<Player>,
         selected_player: usize,
+        decisions: Vec<Decision>,
     },
     Error(String),
 }
@@ -21,6 +22,14 @@ impl AppState {
         } = self
         {
             *selected_player = selection;
+        }
+    }
+
+    pub fn get_player(&self, player_slug: &str) -> Option<&Player> {
+        if let Self::Initialized { players, .. } = self {
+            players.iter().find(|p| p.slug == player_slug)
+        } else {
+            None
         }
     }
 
@@ -44,57 +53,21 @@ impl AppState {
         }
     }
 
-    /*pub fn incr_sleep(&mut self) {
-        if let Self::Initialized { counter_sleep, .. } = self {
-            *counter_sleep += 1;
+    pub fn merge_decisions(&mut self, player_slug: &str, player_decisions: Vec<Decision>) {
+        if let Self::Initialized { decisions, .. } = self {
+            //Filter previous decisions for player
+            let mut new_decisions: Vec<Decision> = decisions
+                .iter()
+                .filter(|d| d.player_slug != player_slug)
+                .map(|d| d.clone())
+                .collect();
+
+            // Add new ones
+            new_decisions.append(&mut player_decisions.clone());
+
+            *decisions = new_decisions;
         }
     }
-
-    pub fn incr_tick(&mut self) {
-        if let Self::Initialized { counter_tick, .. } = self {
-            *counter_tick += 1;
-        }
-    }
-
-    pub fn count_sleep(&self) -> Option<u32> {
-        if let Self::Initialized { counter_sleep, .. } = self {
-            Some(*counter_sleep)
-        } else {
-            None
-        }
-    }
-
-    pub fn count_tick(&self) -> Option<u64> {
-        if let Self::Initialized { counter_tick, .. } = self {
-            Some(*counter_tick)
-        } else {
-            None
-        }
-    }
-
-    pub fn duration(&self) -> Option<&Duration> {
-        if let Self::Initialized { duration, .. } = self {
-            Some(duration)
-        } else {
-            None
-        }
-    }
-
-    pub fn increment_delay(&mut self) {
-        if let Self::Initialized { duration, .. } = self {
-            // Set the duration, note that the duration is in 1s..10s
-            let secs = (duration.as_secs() + 1).clamp(1, 10);
-            *duration = Duration::from_secs(secs);
-        }
-    }
-
-    pub fn decrement_delay(&mut self) {
-        if let Self::Initialized { duration, .. } = self {
-            // Set the duration, note that the duration is in 1s..10s
-            let secs = (duration.as_secs() - 1).clamp(1, 10);
-            *duration = Duration::from_secs(secs);
-        }
-    }*/
 }
 
 impl Default for AppState {

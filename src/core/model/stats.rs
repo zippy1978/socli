@@ -1,21 +1,20 @@
+use rquickjs::IntoJs;
 use serde::{Deserialize, Serialize};
 
-
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, IntoJs)]
 pub struct Game {
     pub date: String,
     pub did_play: bool,
     pub score: u64,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, IntoJs)]
 
 pub struct Stats {
     pub player_slug: String,
     pub score: i64,
     pub games: Vec<Game>,
 }
-
 
 impl Stats {
     pub fn last_game_scores(&self) -> Option<Vec<u64>> {

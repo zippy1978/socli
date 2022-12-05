@@ -6,7 +6,11 @@ use log::{error, info};
 use super::IoEvent;
 use crate::{
     app::{
-        task::{load_player_prices::LoadPlayerPricesTask, load_players::LoadPlayersTask, refresh_players_details::RefreshPlayersDetailsTask, load_players_stats::LoadPlayersStatsTask},
+        task::{
+            load_player_prices::LoadPlayerPricesTask, load_players::LoadPlayersTask,
+            load_players_stats::LoadPlayersStatsTask,
+            refresh_players_details::RefreshPlayersDetailsTask, run_strategies::RunStrategiesTask,
+        },
         App,
     },
     core::{service::player::PlayerError, MainTaskManager},
@@ -40,6 +44,7 @@ impl IoAsyncHandler {
             IoEvent::Initialize => self.do_initialize().await,
             IoEvent::LoadPlayerDetails(slug) => self.do_load_player_prices(&slug).await,
             IoEvent::LoadPlayersStats(slugs) => self.do_load_players_stats(slugs).await,
+            IoEvent::RunStrategies(slug) => self.do_run_strategies(&slug).await,
         };
 
         if let Err(err) = result {
@@ -50,7 +55,22 @@ impl IoAsyncHandler {
         app.loaded();
     }
 
-    async fn do_load_players_stats(&mut self, slugs: Vec<String>) -> Result<(), IoAsyncHandlerError> {
+    async fn do_run_strategies(&mut self, slug: &str) -> Result<(), IoAsyncHandlerError> {
+        let task_manager = resolve!(MainTaskManager);
+        let app = self.app.lock().await;
+        if let Some(player) = app.state.get_player(slug) {
+            task_manager
+                .run(Box::new(RunStrategiesTask::new(self.app.clone(), player.clone())))
+                .await;
+        }
+
+        Ok(())
+    }
+
+    async fn do_load_players_stats(
+        &mut self,
+        slugs: Vec<String>,
+    ) -> Result<(), IoAsyncHandlerError> {
         let task_manager = resolve!(MainTaskManager);
         task_manager
             .run(Box::new(LoadPlayersStatsTask::new(self.app.clone(), slugs)))
@@ -73,7 +93,7 @@ impl IoAsyncHandler {
         info!("🚀 Initialize the application");
         let mut app = self.app.lock().await;
 
-        app.initialized(vec![]).await; // we could update the app state
+        app.initialize(vec![]).await; // we could update the app state
         info!("👍 Application initialized");
 
         // Load players
@@ -82,7 +102,9 @@ impl IoAsyncHandler {
             .await;
 
         // Start background player details refresh
-        task_manager.run(Box::new(RefreshPlayersDetailsTask::new(self.app.clone()))).await;
+        task_manager
+            .run(Box::new(RefreshPlayersDetailsTask::new(self.app.clone())))
+            .await;
 
         Ok(())
     }

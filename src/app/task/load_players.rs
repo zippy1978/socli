@@ -30,7 +30,7 @@ impl Task for LoadPlayersTask {
         match player_service.get_players().await {
             Ok(players) => {
                 let mut app = self.app.lock().await;
-                app.initialized(players).await;
+                app.initialize(players).await;
             }
             Err(e) => {
                 log::error!("Failed to load players: {}", e.to_string())

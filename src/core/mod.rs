@@ -10,7 +10,7 @@ use quartermaster::{store::memory::InMemoryTaskStore, manager::TaskManager};
 
 use crate::core::{
     repository::{player::{PlayerRepo, PlayerRepoImpl}, storage::{StorageRepo, StorageRepoImpl}, price::{PriceRepo, PriceRepoImpl}, stats::{StatsRepo, StatsRepoImpl}},
-    service::{player::{PlayerService, PlayerServiceImpl}, price::{PriceService, PriceServiceImpl}, stats::{StatsService, StatsServiceImpl}},
+    service::{player::{PlayerService, PlayerServiceImpl}, price::{PriceService, PriceServiceImpl}, stats::{StatsService, StatsServiceImpl}, strategy::{StrategyService, StrategyServiceImpl}},
 };
 
 #[macro_export]
@@ -48,7 +48,7 @@ pub type MainTaskManager = TaskManager<InMemoryTaskStore>;
 
 /// Setup depedency injection.
 /// Provided by https://github.com/Neo-Ciber94/dilib-rs#bind-trait-to-implementation.
-pub async fn setup_container<'a>() -> Result<(), InitContainerError> {
+pub async fn setup_container<'a>(strategies_dir: &str) -> Result<(), InitContainerError> {
     let init_result = init_container(|container| {
 
         // Task manager
@@ -68,6 +68,7 @@ pub async fn setup_container<'a>() -> Result<(), InitContainerError> {
         add_singleton_trait!(container, PlayerService => PlayerServiceImpl{}).unwrap();
         add_singleton_trait!(container, PriceService => PriceServiceImpl{}).unwrap();
         add_singleton_trait!(container, StatsService => StatsServiceImpl{}).unwrap();
+        add_singleton_trait!(container, StrategyService => StrategyServiceImpl::new(strategies_dir)).unwrap();
     });
 
     // Start task manager

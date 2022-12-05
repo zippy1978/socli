@@ -51,8 +51,8 @@ impl PlayerService for PlayerServiceImpl {
                 Err(err) => Err(PlayerError::Data(err.to_string())),
             },
             None => {
-                // Limit to 400 players
-                let players = player_repo.get_players(400).await?;
+                // Limit to 450 players
+                let players = player_repo.get_players(450).await?;
                 // Store
                 match to_value(&players) {
                     Ok(v) => {

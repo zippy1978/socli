@@ -42,6 +42,11 @@ impl Task for LoadPlayersStatsTask {
                 // Update player in app state
                 let mut app = self.app.lock().await;
                 app.state.merge_stats(stats);
+                // After update: run strategies
+                for s in &self.slugs {
+                    app.run_strategies(&s.clone()).await;
+                }
+                
             }
             Err(err) => {
                 log::error!(

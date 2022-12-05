@@ -1,8 +1,9 @@
-use serde::{Serialize, Deserialize};
+use rquickjs::IntoJs;
+use serde::{Deserialize, Serialize};
 
-use super::{price::Price, currency::Currency, stats::Stats};
+use super::{currency::Currency, price::Price, stats::Stats};
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, IntoJs)]
 pub struct Player {
     pub slug: String,
     pub display_name: String,
@@ -22,15 +23,14 @@ impl Player {
                 let last_eur = self.prices.first().unwrap().eur.parse::<f64>().unwrap();
                 let old_eur = self.prices.last().unwrap().eur.parse::<f64>().unwrap();
                 (last_eur, old_eur)
-            },
+            }
             Currency::Usd => {
                 let last_usd = self.prices.first().unwrap().usd.parse::<f64>().unwrap();
                 let old_usd = self.prices.last().unwrap().usd.parse::<f64>().unwrap();
                 (last_usd, old_usd)
-            },
+            }
         };
 
         Some((last - old) / old)
-
     }
 }

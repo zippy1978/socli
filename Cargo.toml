@@ -21,4 +21,5 @@ dilib = { version = "0.2.0", features = ["global"] }
 regex = "1.7.0"
 quartermaster = { git = "https://github.com/7seas-quest/quartermaster.git", tag = "0.1.0" }
 dirs = "4.0.0"
-iso8601 = "0.5.1"
+rquickjs = { version = "0.1.7", features = ["full"]}
+clap = { version = "4.0.29", features = ["derive"] }
