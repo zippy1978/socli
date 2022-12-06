@@ -1,10 +1,11 @@
 use std::{
-    io::{self, stdout},
+    io::{self},
     sync::Arc,
     time::Duration,
 };
 
 use clap::Parser;
+use crossterm::{execute, terminal::LeaveAlternateScreen};
 use log::LevelFilter;
 use socli::{
     app::{
@@ -28,7 +29,7 @@ struct Args {
 
 pub async fn start_ui(app: &Arc<tokio::sync::Mutex<App>>) -> io::Result<()> {
     // Configure Crossterm backend for tui
-    let stdout = stdout();
+    let stdout = io::stdout();
     crossterm::terminal::enable_raw_mode()?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
@@ -51,10 +52,6 @@ pub async fn start_ui(app: &Arc<tokio::sync::Mutex<App>>) -> io::Result<()> {
 
         // Check terminal size
         if let Err(msg) = check_window_size(&terminal.size().unwrap()) {
-            // Restore the terminal and close application
-            terminal.clear()?;
-            terminal.show_cursor()?;
-            crossterm::terminal::disable_raw_mode()?;
             println!("{}", msg);
             break;
         }
@@ -72,14 +69,19 @@ pub async fn start_ui(app: &Arc<tokio::sync::Mutex<App>>) -> io::Result<()> {
         };
         // Check if we should exit
         if result == AppReturn::Exit {
+            events.close();
             break;
         }
     }
 
     // Restore the terminal and close application
+    terminal.flush()?;
     terminal.clear()?;
-    terminal.show_cursor()?;
+    let mut stdout = io::stdout();
+    execute!(stdout, LeaveAlternateScreen)?;
     crossterm::terminal::disable_raw_mode()?;
+    terminal.show_cursor()?;
+    
 
     Ok(())
 }

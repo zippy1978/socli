@@ -83,7 +83,7 @@ impl Renderable for DecisionsTable {
             .highlight_style(
                 Style::default()
                     .add_modifier(Modifier::BOLD)
-                    .fg(Color::Yellow),
+                    .fg(Color::White),
             )
             // ...and potentially show a symbol in front of the selection.
             .highlight_symbol(" 🧠  ");
