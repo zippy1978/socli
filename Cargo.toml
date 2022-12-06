@@ -23,3 +23,5 @@ quartermaster = { git = "https://github.com/7seas-quest/quartermaster.git", tag 
 dirs = "4.0.0"
 rquickjs = { version = "0.1.7", features = ["full"]}
 clap = { version = "4.0.29", features = ["derive"] }
+strum = "0.24"
+strum_macros = "0.24"

@@ -13,45 +13,18 @@ use super::Renderable;
 pub struct PlayersTable {
     state: TableState,
     players: Vec<Player>,
+    focused: bool,
 }
 
 impl PlayersTable {
-    pub fn new(players: Vec<Player>, selection: Option<usize>) -> Self {
+    pub fn new(players: Vec<Player>, selection: Option<usize>, focused: bool) -> Self {
         let mut state = TableState::default();
         state.select(selection);
-        Self { state, players }
-    }
-
-    pub fn next(&mut self) {
-        let i = match self.state.selected() {
-            Some(i) => {
-                if i >= self.players.len() - 1 {
-                    0
-                } else {
-                    i + 1
-                }
-            }
-            None => 0,
-        };
-        self.state.select(Some(i));
-    }
-
-    pub fn previous(&mut self) {
-        let i = match self.state.selected() {
-            Some(i) => {
-                if i == 0 {
-                    self.players.len() - 1
-                } else {
-                    i - 1
-                }
-            }
-            None => 0,
-        };
-        self.state.select(Some(i));
-    }
-
-    pub fn unselect(&mut self) {
-        self.state.select(None);
+        Self {
+            state,
+            players,
+            focused,
+        }
     }
 }
 
@@ -156,9 +129,18 @@ impl Renderable for PlayersTable {
             // As any other widget, a Table can be wrapped in a Block.
             .block(
                 Block::default()
-                    .title("Players (⬆ & ⬇)")
+                    .title(if self.focused {
+                        "Players (⬆⬇ to browse) (TAB to switch panel)"
+                    } else {
+                        "Players"
+                    })
                     .borders(Borders::ALL)
-                    .border_type(BorderType::Rounded),
+                    .border_type(BorderType::Rounded)
+                    .border_style(Style::default().fg(if self.focused {
+                        Color::Yellow
+                    } else {
+                        Color::Reset
+                    })),
             )
             // Columns widths are constrained in the same way as Layout...
             .widths(&[

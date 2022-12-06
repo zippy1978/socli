@@ -13,6 +13,7 @@ pub enum Action {
     PageUp,
     PageDown,
     Backspace,
+    Tab,
 }
 
 impl Action {
@@ -31,6 +32,7 @@ impl Action {
             Action::PageUp => &[Key::PageUp],
             Action::PageDown => &[Key::PageDown],
             Action::Backspace => &[Key::Backspace],
+            Action::Tab => &[Key::Tab],
         }
     }
 }
@@ -45,6 +47,7 @@ impl Display for Action {
             Action::PageUp => "PageUp",
             Action::PageDown => "PageDown",
             Action::Backspace => "Backspace",
+            Action::Tab => "Tab",
         };
         write!(f, "{}", str)
     }

@@ -1,12 +1,23 @@
+use strum_macros::EnumIter;
+
 use crate::core::model::{decision::Decision, player::Player, price::Price, stats::Stats};
+
+#[derive(Clone, EnumIter, PartialEq, Eq, Copy)]
+pub enum Panel {
+    Players,
+    Decisions,
+    Logs
+}
 
 #[derive(Clone)]
 pub enum AppState {
     Init,
     Initialized {
+        selected_panel: Panel,
         players: Vec<Player>,
         selected_player: usize,
         decisions: Vec<Decision>,
+        selected_decision: usize,
     },
     Error(String),
 }
@@ -16,12 +27,21 @@ impl AppState {
         matches!(self, &Self::Initialized { .. })
     }
 
-    pub fn update_player_selection(&mut self, selection: usize) {
+    pub fn update_selection(&mut self, selection: usize, panel: Panel) {
         if let Self::Initialized {
-            selected_player, ..
+            selected_player, 
+            selected_decision,
+            ..
         } = self
         {
-            *selected_player = selection;
+
+            match panel {
+                Panel::Players => *selected_player = selection,
+                Panel::Decisions => *selected_decision = selection,
+                Panel::Logs => *selected_decision = selection // TODO,
+            }
+
+            
         }
     }
 

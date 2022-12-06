@@ -10,5 +10,6 @@
 
 # 0.1.0
 - remove panic when window size too small
+- tab: toggle players/decisions focus
 - rarity: limited only ?
 - player list refresh --flush ?

@@ -57,8 +57,8 @@ $ socli -s strats
 ### Commands
 
 - [Ctrl+C] or [Q]: exit
-- Up/Down arrows (as well as page up/down): browse player list
-- Backspace: clear decisions
+- Tab to switch selected panel
+- Contextual keys are diplayed on the active panel
 
 
 ## Writing strategy scripts

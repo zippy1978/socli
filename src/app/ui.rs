@@ -5,10 +5,10 @@ use tui::{
 };
 
 use super::{
-    state::AppState,
+    state::{AppState, Panel},
     widget::{
-        decisions_table::DecisionsTable, logs_panel::LogsPanel, players_table::PlayersTable,
-        Renderable, header::Header,
+        decisions_table::DecisionsTable, header::Header, logs_panel::LogsPanel,
+        players_table::PlayersTable, Renderable,
     },
     App,
 };
@@ -52,29 +52,43 @@ where
     let mut player_table = if let AppState::Initialized {
         players,
         selected_player,
+        selected_panel,
         ..
     } = &app.state
     {
-        PlayersTable::new(players.clone(), Some(*selected_player))
+        PlayersTable::new(
+            players.clone(),
+            Some(*selected_player),
+            matches!(selected_panel, Panel::Players),
+        )
     } else {
-        PlayersTable::new(vec![], None)
+        PlayersTable::new(vec![], None, false)
     };
     player_table.render(rect, chunks[2]);
 
     // Decisions
     let mut decisons_table = if let AppState::Initialized {
         decisions,
+        selected_panel,
+        selected_decision,
         ..
     } = &app.state
     {
-        DecisionsTable::new(decisions.clone())
+        DecisionsTable::new(
+            decisions.clone(),
+            Some(*selected_decision),
+            matches!(selected_panel, Panel::Decisions),
+        )
     } else {
-        DecisionsTable::new(vec![])
+        DecisionsTable::new(vec![], None, false)
     };
     decisons_table.render(rect, chunks[3]);
 
     // Logs
-    let mut logs_panel = LogsPanel {};
+    let mut logs_panel = if let AppState::Initialized { selected_panel, .. } = &app.state {
+        LogsPanel::new(matches!(selected_panel, Panel::Logs))
+    } else {
+        LogsPanel::new(false)
+    };
     logs_panel.render(rect, chunks[4]);
 }
-

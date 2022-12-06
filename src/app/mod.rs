@@ -1,10 +1,12 @@
+use strum::IntoEnumIterator;
+
 use crate::core::model::player::Player;
 
 use self::{
     action::{Action, Actions},
     input::key::Key,
     io::IoEvent,
-    state::AppState,
+    state::{AppState, Panel},
 };
 
 pub mod action;
@@ -41,6 +43,8 @@ impl App {
             players: vec![],
             selected_player: 0,
             decisions: vec![],
+            selected_panel: Panel::Players,
+            selected_decision: 0,
         };
 
         Self {
@@ -62,6 +66,7 @@ impl App {
                 Action::PageUp => self.go_up(20).await,
                 Action::PageDown => self.go_down(20).await,
                 Action::Backspace => self.clear_decisions(),
+                Action::Tab => self.next_panel_selection(),
             }
         } else {
             log::warn!("No action accociated to {}", key);
@@ -99,12 +104,15 @@ impl App {
             Action::PageUp,
             Action::PageDown,
             Action::Backspace,
+            Action::Tab,
         ]
         .into();
         self.state = AppState::Initialized {
             players,
             selected_player: 0,
             decisions: vec![],
+            selected_panel: Panel::Players,
+            selected_decision: 0,
         };
         self.refresh_player_prices(0, false).await;
     }
@@ -124,10 +132,31 @@ impl App {
         }
     }
 
-    pub fn clear_decisions(&mut self) -> AppReturn{
-        if let AppState::Initialized { decisions,.. } = &mut self.state {
+    pub fn clear_decisions(&mut self) -> AppReturn {
+        if let AppState::Initialized { decisions, .. } = &mut self.state {
             decisions.clear();
         }
+        AppReturn::Continue
+    }
+
+    pub fn next_panel_selection(&mut self) -> AppReturn {
+        if let AppState::Initialized { selected_panel, .. } = &mut self.state {
+            let len = Panel::iter().len();
+            let current_pos = Panel::iter()
+                .enumerate()
+                .find(|(_, p)| p == selected_panel)
+                .map(|(i, _)| i);
+
+            if let Some(pos) = current_pos {
+                let next_pos = (pos + 1) % len;
+                for (i, p) in Panel::iter().enumerate() {
+                    if next_pos == i {
+                        *selected_panel = p;
+                    }
+                }
+            }
+        }
+
         AppReturn::Continue
     }
 
@@ -148,15 +177,21 @@ impl App {
 
     pub async fn go_up(&mut self, step: usize) -> AppReturn {
         if let AppState::Initialized {
-            selected_player, ..
+            selected_player,
+            selected_panel,
+            selected_decision,
+            ..
         } = &self.state
         {
-            let selection = if *selected_player > step {
-                *selected_player - step
-            } else {
-                0
+            let selected = *match selected_panel {
+                Panel::Players => selected_player,
+                Panel::Decisions => selected_decision,
+                Panel::Logs => selected_decision, // TODO: change !,
             };
-            self.update_player_selection(selection).await;
+
+            let selection = if selected > step { selected - step } else { 0 };
+            self.update_selection(selection, selected_panel.clone())
+                .await;
         }
 
         AppReturn::Continue
@@ -165,25 +200,37 @@ impl App {
     pub async fn go_down(&mut self, step: usize) -> AppReturn {
         if let AppState::Initialized {
             players,
+            decisions,
             selected_player,
+            selected_panel,
+            selected_decision,
             ..
         } = &self.state
         {
-            let selection = if (*selected_player + step) < players.len() - 1 {
-                *selected_player + step
-            } else {
-                players.len() - 1
+            let (len, selected) = match selected_panel {
+                Panel::Players => (players.len(), *selected_player),
+                Panel::Decisions => (decisions.len(), *selected_decision),
+                Panel::Logs => (decisions.len(), *selected_decision), // TODO: change !,
             };
-            self.update_player_selection(selection).await;
+
+            let selection = if (selected + step) < len - 1 {
+                selected + step
+            } else {
+                len - 1
+            };
+            self.update_selection(selection, selected_panel.clone())
+                .await;
         }
 
         AppReturn::Continue
     }
 
-    pub async fn update_player_selection(&mut self, selection: usize) {
-        self.state.update_player_selection(selection);
+    pub async fn update_selection(&mut self, selection: usize, panel: Panel) {
+        self.state.update_selection(selection, panel);
 
-        self.refresh_player_prices(selection, false).await;
+        if matches!(panel, Panel::Players) {
+            self.refresh_player_prices(selection, false).await;
+        }
     }
 
     pub fn error(&mut self, msg: String) {
