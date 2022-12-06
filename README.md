@@ -94,7 +94,7 @@ export function decide(player) {
 
 ### Player data model
 
-```json
+```js
 {
 	slug: string,
 	display_name: string,

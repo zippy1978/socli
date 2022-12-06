@@ -13,13 +13,21 @@ use super::{
     App,
 };
 
-fn check_size(rect: &Rect) {
+pub fn check_window_size(rect: &Rect) -> Result<(), String> {
     if rect.width < 52 {
-        panic!("Require width >= 52, (got {})", rect.width);
+        return Err(format!(
+            "Terminal window too small, a width >= 52 is required, (got {})",
+            rect.width
+        ));
     }
     if rect.height < 28 {
-        panic!("Require height >= 28, (got {})", rect.height);
+        return Err(format!(
+            "Terminal window too small, a height >= 28 is required, (got {})",
+            rect.height
+        ));
     }
+
+    Ok(())
 }
 
 pub fn draw<B>(rect: &mut Frame<B>, app: &App)
@@ -27,7 +35,6 @@ where
     B: Backend,
 {
     let size = rect.size();
-    check_size(&size);
 
     // Vertical layout
     let chunks = Layout::default()

@@ -10,7 +10,7 @@ const MAX_POINT_PRICE = 0.4;
 const MIN_PROGRESSION_RATIO = 0;
 
 export function decide(player) {
-  const gamesPlayed = player.stats.games.filter((g) => g.did_play);
+  /*const gamesPlayed = player.stats.games.filter((g) => g.did_play);
   const gamesPlayedCount = gamesPlayed.length;
   const gamesCount = player.stats.games.length;
   const gamePlayedRatio = gamesPlayedCount / gamesCount;
@@ -24,5 +24,5 @@ export function decide(player) {
       action: "Buy",
       comment: `price: ${lastPrice.toFixed(2)}€, point price: ${pointPrice.toFixed(2)}€, score progression: ${(scoreProgressionRatio * 100).toFixed(2)}%`,
     };
-  }
+  }*/
 }

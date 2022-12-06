@@ -157,7 +157,7 @@ impl Renderable for PlayersTable {
             .highlight_style(
                 Style::default()
                     .add_modifier(Modifier::BOLD)
-                    .fg(Color::White),
+                    .fg(Color::Yellow),
             )
             // ...and potentially show a symbol in front of the selection.
             .highlight_symbol(" ⛹️  ");
