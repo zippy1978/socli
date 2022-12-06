@@ -213,13 +213,15 @@ impl App {
                 Panel::Logs => (decisions.len(), *selected_decision), // TODO: change !,
             };
 
-            let selection = if (selected + step) < len - 1 {
-                selected + step
-            } else {
-                len - 1
-            };
-            self.update_selection(selection, selected_panel.clone())
-                .await;
+            if len > 0 {
+                let selection = if (selected + step) < len - 1 {
+                    selected + step
+                } else {
+                    len - 1
+                };
+                self.update_selection(selection, selected_panel.clone())
+                    .await;
+            }
         }
 
         AppReturn::Continue
