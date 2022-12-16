@@ -1,11 +1,15 @@
 # SoCli - A Sorare NBA 🏀 CLI 
 
->> TODO = Add screenshot
+![](./docs/screenshot.png)
 
 ## Main features
 
 - Player stats retrival and browsing
 - JavaScript based decision engine
+
+> Does only work for with `limited` rarity levle cards at the moment.
+
+
 
 ## Installation
 
@@ -32,10 +36,11 @@ Verify that the the tool is ready for use with:
 $ socli --help
 SoCli - A Sorare NBA 🏀 CLI
 
-Usage: socli --strategies <STRATEGIES>
+Usage: socli [OPTIONS] --strategies <STRATEGIES>
 
 Options:
   -s, --strategies <STRATEGIES>  Strategy scripts folder path
+  -r, --reset                    Reset stored data
   -h, --help                     Print help information
   -V, --version                  Print version information
 ```
@@ -54,11 +59,22 @@ $ socli -s strats
 # Where `strats` is the path to the strategy scripts folder
 ```
 
+On first start the program looks at all Sorare NFT cards to extract NBa players. This may take sometime, but once done the player list is cached for next launches.
+
+The cache can be cleared when launching with the `-r`switch:
+
+```bash
+$ socli -s strats -r
+# Forces player reload on startup
+```
+
+
+
 ### Commands
 
 - [Ctrl+C] or [Q]: exit
 - Tab to switch selected panel
-- Contextual keys are diplayed on the active panel
+- Contextual keys are displayed on the active panel
 
 
 ## Writing strategy scripts
@@ -98,6 +114,7 @@ export function decide(player) {
 {
 	slug: string,
 	display_name: string,
+	birth_date: string,
 	team?: string,
 	prices: [
 		{

@@ -7,6 +7,7 @@ use super::{currency::Currency, price::Price, stats::Stats};
 pub struct Player {
     pub slug: String,
     pub display_name: String,
+    pub birth_date: String,
     pub team: Option<String>,
     pub prices: Vec<Price>,
     pub stats: Option<Stats>,

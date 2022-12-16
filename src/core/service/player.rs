@@ -5,7 +5,7 @@ use serde_json::{from_value, to_value};
 
 use crate::{
     core::{
-        model::player::{Player},
+        model::player::Player,
         repository::{error::RepoError, player::PlayerRepo, storage::StorageRepo},
     },
     resolve_trait,
@@ -33,6 +33,7 @@ impl From<RepoError> for PlayerError {
 #[async_trait]
 pub trait PlayerService {
     async fn get_players(&self) -> Result<Vec<Player>, PlayerError>;
+    async fn clear_storage(&self) -> Result<(), PlayerError>;
 }
 
 pub struct PlayerServiceImpl {}
@@ -51,8 +52,7 @@ impl PlayerService for PlayerServiceImpl {
                 Err(err) => Err(PlayerError::Data(err.to_string())),
             },
             None => {
-                // Limit to 450 players
-                let players = player_repo.get_players(450).await?;
+                let players = player_repo.get_players().await?;
                 // Store
                 match to_value(&players) {
                     Ok(v) => {
@@ -63,5 +63,12 @@ impl PlayerService for PlayerServiceImpl {
                 }
             }
         }
+    }
+
+    async fn clear_storage(&self) -> Result<(), PlayerError> {
+        let storage_repo = resolve_trait!(StorageRepo);
+        storage_repo.delete_collection("players").await?;
+
+        Ok(())
     }
 }

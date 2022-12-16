@@ -1,14 +1,17 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, time::Duration};
 
 use async_trait::async_trait;
 
 use graphql_client::{reqwest::post_graphql, GraphQLQuery};
 use regex::Regex;
 use reqwest::Client;
+use tokio::time::sleep;
 
 use crate::core::model::player::Player;
 
 use super::error::RepoError;
+
+type Time = String;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -28,7 +31,7 @@ struct GetAllTokensNBA;
 
 #[async_trait]
 pub trait PlayerRepo {
-    async fn get_players(&self, limit: usize) -> Result<Vec<Player>, RepoError>;
+    async fn get_players(&self) -> Result<Vec<Player>, RepoError>;
 }
 
 pub struct PlayerRepoImpl {
@@ -83,6 +86,7 @@ impl PlayerRepoImpl {
         for p in nba_players {
             players.push(Player {
                 slug: p.slug.clone(),
+                birth_date: p.birth_date,
                 display_name: p.display_name,
                 team: match p.team {
                     Some(t) => Some(t.name),
@@ -140,26 +144,48 @@ impl PlayerRepoImpl {
 
 #[async_trait]
 impl PlayerRepo for PlayerRepoImpl {
-    async fn get_players(&self, limit: usize) -> Result<Vec<Player>, RepoError> {
-        
+    async fn get_players(&self) -> Result<Vec<Player>, RepoError> {
+        // The page size for paged queries
+        let page_size = 50;
+        // Track if new players found after laoding anew page
+        let mut new_count;
+        // Track retry (new page load) without finding new players
+        let mut retry_count = 0;
+
         // Query all pages
         let mut players_set = HashSet::new();
         log::debug!("Start player loading");
-        let mut result = self.get_players_page(Some(50), None).await?;
+        let mut result = self.get_players_page(Some(page_size), None).await?;
         players_set.extend(result.0);
         log::debug!("Loaded players count is: {}", players_set.len());
-        while result.1.is_some() && players_set.len() < limit {
+        while result.1.is_some() && retry_count <= 10  {
             let cursor = result.1.clone().unwrap();
             log::debug!("Loading player page at cursor {}", &cursor);
-            result = self.get_players_page(Some(50), result.1.clone()).await?;
+            result = self
+                .get_players_page(Some(page_size), result.1.clone())
+                .await?;
+            let loaded_count = players_set.len();
             players_set.extend(result.0);
+            new_count = players_set.len() - loaded_count;
+            if new_count == 0 {
+                retry_count += 1;
+                log::debug!("No new player found on page: retrying (retry count is {})", retry_count);
+            } else {
+                retry_count = 0;
+            }
             log::debug!("Loaded players count is: {}", players_set.len());
+
+            // Wait a bit before next page
+            sleep(Duration::from_millis(2000)).await;
         }
 
         // Convert to vec and sort results
         let mut players = players_set.into_iter().collect::<Vec<Player>>();
-        players.sort_by(|a, b| a.display_name.to_lowercase().cmp(&b.display_name.to_lowercase()));
-
+        players.sort_by(|a, b| {
+            a.display_name
+                .to_lowercase()
+                .cmp(&b.display_name.to_lowercase())
+        });
 
         Ok(players)
     }

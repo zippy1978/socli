@@ -109,14 +109,4 @@ impl IoAsyncHandler {
         Ok(())
     }
 
-    /*async fn do_sleep(&mut self, duration: Duration) -> Result<()> {
-        info!("😴 Go sleeping for {:?}...", duration);
-        tokio::time::sleep(duration).await;
-        info!("⏰ Wake up !");
-        // Notify the app for having slept
-        let mut app = self.app.lock().await;
-        app.sleeped();
-
-        Ok(())
-    }*/
 }

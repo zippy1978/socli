@@ -69,7 +69,7 @@ impl App {
                 Action::Tab => self.next_panel_selection(),
             }
         } else {
-            log::warn!("No action accociated to {}", key);
+            log::warn!("No action bound to {}", key);
             AppReturn::Continue
         }
     }

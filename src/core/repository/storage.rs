@@ -11,6 +11,8 @@ pub trait StorageRepo {
     async fn get_collection(&self, name: &str) -> Result<Option<Value>, RepoError>;
 
     async fn set_collection(&self, name: &str, data: &Value) -> Result<(), RepoError>;
+
+    async fn delete_collection(&self, name: &str) -> Result<(), RepoError>;
 }
 
 pub struct StorageRepoImpl {
@@ -72,6 +74,20 @@ impl StorageRepo for StorageRepoImpl {
         match fs::write(path, json) {
             Ok(_) => (),
             Err(err) => return Err(RepoError::Write(err.to_string())),
+        }
+
+        Ok(())
+    }
+
+    async fn delete_collection(&self, name: &str) -> Result<(), RepoError> {
+        // Get colleciton path
+        let path = self.collection_path(name);
+
+        if path.exists() {
+            match fs::remove_file(path) {
+                Ok(_) => (),
+                Err(err) => return Err(RepoError::Write(err.to_string())),
+            }
         }
 
         Ok(())

@@ -14,7 +14,8 @@ use socli::{
         ui::{check_window_size, draw},
         App, AppReturn,
     },
-    core::setup_container,
+    core::{service::player::PlayerService, setup_container},
+    resolve_trait,
 };
 use tui::{backend::CrosstermBackend, Terminal};
 
@@ -25,6 +26,9 @@ struct Args {
     /// Strategy scripts folder path
     #[arg(short, long)]
     strategies: String,
+    /// Reset stored data
+    #[clap(long, short, action)]
+    reset: bool,
 }
 
 pub async fn start_ui(app: &Arc<tokio::sync::Mutex<App>>) -> io::Result<()> {
@@ -81,7 +85,6 @@ pub async fn start_ui(app: &Arc<tokio::sync::Mutex<App>>) -> io::Result<()> {
     execute!(stdout, LeaveAlternateScreen)?;
     crossterm::terminal::disable_raw_mode()?;
     terminal.show_cursor()?;
-    
 
     Ok(())
 }
@@ -99,6 +102,14 @@ async fn main() -> io::Result<()> {
     setup_container(&args.strategies)
         .await
         .expect("failed to intialize container");
+
+    // Reset storage
+    if args.reset {
+        resolve_trait!(PlayerService)
+            .clear_storage()
+            .await
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+    }
 
     // Create a channel for IoEvent
     let (sync_io_tx, mut sync_io_rx) = tokio::sync::mpsc::channel::<IoEvent>(100);
