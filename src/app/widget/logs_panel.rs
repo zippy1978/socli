@@ -1,4 +1,4 @@
-use tui::{
+use ratatui::{
     style::{Color, Style},
     widgets::{Block, BorderType, Borders},
 };
@@ -17,7 +17,7 @@ impl LogsPanel {
 }
 
 impl Renderable for LogsPanel {
-    fn render<B: tui::backend::Backend>(&mut self, f: &mut tui::Frame<B>, area: tui::layout::Rect) {
+    fn render<B: ratatui::backend::Backend>(&mut self, f: &mut ratatui::Frame<B>, area: ratatui::layout::Rect) {
         let widget = TuiLoggerWidget::default()
             .style_error(Style::default().fg(Color::Red))
             .style_debug(Style::default().fg(Color::Green))

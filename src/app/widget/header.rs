@@ -1,4 +1,4 @@
-use tui::{
+use ratatui::{
     layout::Alignment,
     style::{Color, Modifier, Style},
     widgets::Paragraph,
@@ -9,7 +9,7 @@ use super::Renderable;
 pub struct Header {}
 
 impl Renderable for Header {
-    fn render<B: tui::backend::Backend>(&mut self, f: &mut tui::Frame<B>, area: tui::layout::Rect) {
+    fn render<B: ratatui::backend::Backend>(&mut self, f: &mut ratatui::Frame<B>, area: ratatui::layout::Rect) {
         let widget = Paragraph::new(format!(
             "SoCli - A Sorare NBA 🏀 CLI - {}",
             env!("CARGO_PKG_VERSION")

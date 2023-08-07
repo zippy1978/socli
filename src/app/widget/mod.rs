@@ -1,4 +1,4 @@
-use tui::{backend::Backend, Frame, layout::Rect};
+use ratatui::{backend::Backend, Frame, layout::Rect};
 
 pub mod players_table;
 pub mod logs_panel;

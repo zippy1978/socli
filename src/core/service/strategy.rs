@@ -6,7 +6,7 @@ use std::{
 
 use async_trait::async_trait;
 use regex::Regex;
-use rquickjs::{Context, Function, Module, Runtime, FromJs};
+use rquickjs::{Context, Function, Runtime};
 
 use crate::core::{
     model::{
