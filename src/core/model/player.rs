@@ -34,4 +34,24 @@ impl Player {
 
         Some((last - old) / old)
     }
+
+    pub fn price_avg(&self, currency: Currency, max_count: usize) -> Option<f64> {
+        if self.prices.is_empty() {
+            return None;
+        }
+
+        // Filter prices according to max_count
+        let prices = self.prices.iter().take(max_count);
+        let len = prices.len() as f64;
+
+        // Compute average
+        Some(match currency {
+            Currency::Euro => {
+                prices.map(|p| p.eur.parse::<f64>().unwrap()).sum::<f64>() / len
+            }
+            Currency::Usd => {
+                prices.map(|p| p.usd.parse::<f64>().unwrap()).sum::<f64>() / len
+            }
+        })
+    }
 }

@@ -35,6 +35,7 @@ impl Renderable for PlayersTable {
             .iter()
             .map(|p| {
                 let price_delta_ratio = p.price_delta_ratio(Currency::Euro);
+                let avg_price: Option<f64> = p.price_avg(Currency::Euro, 5);
                 let (last_game_scores, games_count, played_games_count, played_games_ratio) =
                     match &p.stats {
                         Some(s) => (
@@ -108,6 +109,14 @@ impl Renderable for PlayersTable {
                         }
                         None => Color::Reset,
                     })),
+                    // Average price
+                    Cell::from(format!(
+                        "{}",
+                        match avg_price {
+                            Some(avg) => format!("{:.2} €", avg),
+                            None => "-".to_string(),
+                        }
+                    )),
                 ])
             })
             .collect();
@@ -121,6 +130,7 @@ impl Renderable for PlayersTable {
                     "Last Games Scores",
                     "Last Games Played",
                     "Price",
+                    "Avg.",
                 ])
                 .style(Style::default().fg(Color::Yellow)), // If you want some space between the header and the rest of the rows, you can always
                                                             // specify some margin at the bottom.
@@ -146,10 +156,11 @@ impl Renderable for PlayersTable {
             .widths(&[
                 Constraint::Percentage(20),
                 Constraint::Percentage(16),
+                Constraint::Percentage(8),
+                Constraint::Percentage(18),
+                Constraint::Percentage(14),
+                Constraint::Percentage(12),
                 Constraint::Percentage(10),
-                Constraint::Percentage(22),
-                Constraint::Percentage(16),
-                Constraint::Percentage(16),
             ])
             // ...and they can be separated by a fixed spacing.
             .column_spacing(1)
