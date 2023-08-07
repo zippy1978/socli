@@ -6,7 +6,7 @@ use std::{
 
 use async_trait::async_trait;
 use regex::Regex;
-use rquickjs::{Context, Function, Module, Runtime};
+use rquickjs::{Context, Function, Module, Runtime, FromJs};
 
 use crate::core::{
     model::{
@@ -75,8 +75,7 @@ impl StrategyServiceImpl {
         let rt = Runtime::new().unwrap();
         let ctx = Context::full(&rt).unwrap();
         ctx.with(|ctx| {
-            let module = Module::new(ctx, "strategy".to_string(), code)?;
-            let module = module.eval()?;
+            let module = ctx.compile("strategy".to_string(), code)?;
             let decide: Function = module.get("decide")?;
             let res: Option<ScriptDecision> = decide.call((player.clone(), &player.slug))?;
             if let Some(decision) = res {

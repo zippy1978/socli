@@ -7,22 +7,22 @@ authors = ["Gilles Grousset"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-graphql_client= { version = "0.11.0", features = ["reqwest"] }
+graphql_client= { version = "0.13.0", features = ["reqwest"] }
 serde = "^1.0"
 serde_json = "^1.0"
 reqwest = { version = "^0.11", features = ["json"] }
 async-trait = "0.1"
 tui = "0.19"
-tui-logger = "0.8.1"
-crossterm = "0.25"
+tui-logger = "0.9.3"
+crossterm = "0.27.0"
 log = "0.4"
 tokio = { version = "1", features = ["full"] }
 eyre = "0.6"
 dilib = { version = "0.2.0", features = ["global"] }
 regex = "1.7.0"
 quartermaster = { git = "https://github.com/7seas-quest/quartermaster.git", tag = "0.1.0" }
-dirs = "4.0.0"
-rquickjs = { version = "0.1.7", features = ["full"]}
+dirs = "5.0.1"
+rquickjs = { version = "0.3.1", features = ["full"]}
 clap = { version = "4.0.29", features = ["derive"] }
-strum = "0.24"
-strum_macros = "0.24"
+strum = "0.25.0"
+strum_macros = "0.25.2"
