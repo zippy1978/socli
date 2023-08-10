@@ -15,7 +15,7 @@ type Time = String;
 
 #[derive(GraphQLQuery)]
 #[graphql(
-    schema_path = "src/core/graphql/schema-us-sports.graphql",
+    schema_path = "src/core/graphql/schema.graphql",
     query_path = "src/core/graphql/get-players-info-query.graphql",
     response_derives = "Debug"
 )]

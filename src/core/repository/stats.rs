@@ -12,7 +12,7 @@ type Time = String;
 
 #[derive(GraphQLQuery)]
 #[graphql(
-    schema_path = "src/core/graphql/schema-us-sports.graphql",
+    schema_path = "src/core/graphql/schema.graphql",
     query_path = "src/core/graphql/get-players-stats-query.graphql",
     response_derives = "Debug"
 )]
@@ -71,9 +71,9 @@ impl StatsRepo for StatsRepoImpl {
             .iter()
             .map(|p| Stats {
                 player_slug: p.slug.clone(),
-                score: p.ten_game_average,
+                score: p.ten_game_average_game_stats.score.round() as i64,
                 games: p
-                    .latest_final_fixture_stats
+                    .latest_fixture_stats
                     .iter()
                     .filter(|f| {
                         !matches!(

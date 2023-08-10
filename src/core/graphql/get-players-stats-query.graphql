@@ -2,8 +2,10 @@ query GetPlayersStats($slugs: [String!]) {
   
   nbaPlayers(slugs: $slugs) {
     slug
-    tenGameAverage
-    latestFinalFixtureStats(last: 10) {
+    tenGameAverageGameStats {
+      score
+    }
+    latestFixtureStats(last: 10) {
       score
       fixture {
         startDate
