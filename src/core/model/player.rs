@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use rquickjs::IntoJs;
 use serde::{Deserialize, Serialize};
 
@@ -46,12 +47,17 @@ impl Player {
 
         // Compute average
         Some(match currency {
-            Currency::Euro => {
-                prices.map(|p| p.eur.parse::<f64>().unwrap()).sum::<f64>() / len
-            }
-            Currency::Usd => {
-                prices.map(|p| p.usd.parse::<f64>().unwrap()).sum::<f64>() / len
-            }
+            Currency::Euro => prices.map(|p| p.eur.parse::<f64>().unwrap()).sum::<f64>() / len,
+            Currency::Usd => prices.map(|p| p.usd.parse::<f64>().unwrap()).sum::<f64>() / len,
         })
+    }
+
+    pub fn age(&self) -> u32 {
+        let birth_date = DateTime::parse_from_rfc3339(&self.birth_date).unwrap().with_timezone(&Utc);
+        let now = chrono::Utc::now().date_naive();
+        match now.years_since(birth_date.date_naive()) {
+            Some(a) => a,
+            None => 0,
+        }
     }
 }

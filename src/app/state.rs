@@ -5,6 +5,7 @@ use crate::core::model::{decision::Decision, player::Player, price::Price, stats
 #[derive(Clone, EnumIter, PartialEq, Eq, Copy)]
 pub enum Panel {
     Players,
+    Player,
     Decisions,
     Logs
 }
@@ -38,7 +39,8 @@ impl AppState {
             match panel {
                 Panel::Players => *selected_player = selection,
                 Panel::Decisions => *selected_decision = selection,
-                Panel::Logs => *selected_decision = selection // TODO,
+                Panel::Logs => (),
+                Panel::Player => (),
             }
 
             

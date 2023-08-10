@@ -8,7 +8,7 @@ use super::{
     state::{AppState, Panel},
     widget::{
         decisions_table::DecisionsTable, header::Header, logs_panel::LogsPanel,
-        players_table::PlayersTable, Renderable,
+        player_details::PlayerDetails, players_table::PlayersTable, Renderable,
     },
     App,
 };
@@ -37,14 +37,14 @@ where
     let size = rect.size();
 
     // Vertical layout
-    let chunks = Layout::default()
+    let master_layout = Layout::default()
         .direction(Direction::Vertical)
         .constraints(
             [
                 Constraint::Length(1),
                 Constraint::Length(1),
-                Constraint::Percentage(40),
-                Constraint::Percentage(40),
+                Constraint::Percentage(50),
+                Constraint::Percentage(30),
                 Constraint::Length(12),
             ]
             .as_ref(),
@@ -53,7 +53,13 @@ where
 
     // Header
     let mut header = Header {};
-    header.render(rect, chunks[0]);
+    header.render(rect, master_layout[0]);
+
+    // Players horizontal layout (list + details)
+    let player_layout = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+        .split(master_layout[2]);
 
     // Players table
     let mut player_table = if let AppState::Initialized {
@@ -71,7 +77,27 @@ where
     } else {
         PlayersTable::new(vec![], None, false)
     };
-    player_table.render(rect, chunks[2]);
+    player_table.render(rect, player_layout[0]);
+
+    // Players details
+    let mut player_details = if let AppState::Initialized {
+        players,
+        selected_player,
+        selected_panel,
+        ..
+    } = &app.state
+    {
+        PlayerDetails::new(
+            match players.get(*selected_player) {
+                Some(p) => Some(p.clone()),
+                None => None,
+            },
+            matches!(selected_panel, Panel::Player),
+        )
+    } else {
+        PlayerDetails::new(None, false)
+    };
+    player_details.render(rect, player_layout[1]);
 
     // Decisions
     let mut decisons_table = if let AppState::Initialized {
@@ -89,7 +115,7 @@ where
     } else {
         DecisionsTable::new(vec![], None, false)
     };
-    decisons_table.render(rect, chunks[3]);
+    decisons_table.render(rect, master_layout[3]);
 
     // Logs
     let mut logs_panel = if let AppState::Initialized { selected_panel, .. } = &app.state {
@@ -97,5 +123,5 @@ where
     } else {
         LogsPanel::new(false)
     };
-    logs_panel.render(rect, chunks[4]);
+    logs_panel.render(rect, master_layout[4]);
 }

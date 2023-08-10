@@ -5,7 +5,7 @@ fn create_player() -> Player {
         slug: "slug".to_string(),
         display_name: "name".to_string(),
         prices: vec![],
-        birth_date: "2023-07-22T17:15:13Z".to_string(),
+        birth_date: "2003-07-22T17:15:13Z".to_string(),
         team: Some("team".to_string()),
         stats: None,
     };
@@ -75,4 +75,10 @@ fn price_avg_under_max_count() {
         Some(avg) => assert_eq!(avg, 60.0), // Checking if average is correct
         None => panic!("Unexpected None"),  // In case function returns None
     }
+}
+
+#[test]
+fn age() {
+    let player = create_player();
+    assert_eq!(player.age(), 20);
 }

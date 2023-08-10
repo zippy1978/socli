@@ -36,15 +36,14 @@ impl Renderable for PlayersTable {
             .map(|p| {
                 let price_delta_ratio = p.price_delta_ratio(Currency::Euro);
                 let avg_price: Option<f64> = p.price_avg(Currency::Euro, 5);
-                let (last_game_scores, games_count, played_games_count, played_games_ratio) =
+                let (games_count, played_games_count, played_games_ratio) =
                     match &p.stats {
                         Some(s) => (
-                            s.last_game_scores(),
                             Some(s.games.len() as u64),
                             s.played_games_count(),
                             s.played_games_ratio(),
                         ),
-                        None => (None, None, None, None),
+                        None => (None, None, None),
                     };
 
                 Row::new(vec![
@@ -58,17 +57,6 @@ impl Renderable for PlayersTable {
                     // Score
                     Cell::from(match &p.stats {
                         Some(s) => format!("{}", s.score),
-                        None => "-".to_string(),
-                    }),
-                    // Last Games Scores
-                    Cell::from(match last_game_scores {
-                        Some(s) => format!(
-                            "{}",
-                            s.iter()
-                                .map(|v| format!("{}", v))
-                                .collect::<Vec<String>>()
-                                .join("-")
-                        ),
                         None => "-".to_string(),
                     }),
                     // Last Games Played
@@ -127,9 +115,8 @@ impl Renderable for PlayersTable {
                     "Name",
                     "Team",
                     "Score",
-                    "Last Games Scores",
                     "Last Games Played",
-                    "Price",
+                    "Last Sale",
                     "Avg.",
                 ])
                 .style(Style::default().fg(Color::Yellow)), // If you want some space between the header and the rest of the rows, you can always
@@ -156,11 +143,10 @@ impl Renderable for PlayersTable {
             .widths(&[
                 Constraint::Percentage(20),
                 Constraint::Percentage(16),
-                Constraint::Percentage(8),
+                Constraint::Percentage(10),
+                Constraint::Percentage(20),
                 Constraint::Percentage(18),
                 Constraint::Percentage(14),
-                Constraint::Percentage(12),
-                Constraint::Percentage(10),
             ])
             // ...and they can be separated by a fixed spacing.
             .column_spacing(1)

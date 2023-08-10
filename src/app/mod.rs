@@ -186,7 +186,8 @@ impl App {
             let selected = *match selected_panel {
                 Panel::Players => selected_player,
                 Panel::Decisions => selected_decision,
-                Panel::Logs => selected_decision, // TODO: change !,
+                Panel::Logs => &0,
+                Panel::Player => &0,
             };
 
             let selection = if selected > step { selected - step } else { 0 };
@@ -210,7 +211,8 @@ impl App {
             let (len, selected) = match selected_panel {
                 Panel::Players => (players.len(), *selected_player),
                 Panel::Decisions => (decisions.len(), *selected_decision),
-                Panel::Logs => (decisions.len(), *selected_decision), // TODO: change !,
+                Panel::Logs => (0, 0),
+                Panel::Player => (0, 0),
             };
 
             if len > 0 {
