@@ -6,6 +6,7 @@ pub struct Game {
     pub date: String,
     pub did_play: bool,
     pub score: u64,
+    pub minutes_played: i64,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, IntoJs)]

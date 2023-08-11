@@ -130,6 +130,7 @@ export function decide(player) {
 			{
 				date: string,
 				did_play: bool,
+				minutes_played: number,
 				score: number,
 			},
 			...

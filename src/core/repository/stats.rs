@@ -2,9 +2,7 @@ use async_trait::async_trait;
 use graphql_client::{reqwest::post_graphql, GraphQLQuery};
 use reqwest::Client;
 
-use crate::core::model::stats::{Stats, Game};
-
-use self::get_players_stats::PlayerInFixtureStatusIconType;
+use crate::core::model::stats::{Game, Stats};
 
 use super::error::RepoError;
 
@@ -73,18 +71,20 @@ impl StatsRepo for StatsRepoImpl {
                 player_slug: p.slug.clone(),
                 score: p.ten_game_average_game_stats.score.round() as i64,
                 games: p
-                    .latest_fixture_stats
+                    .latest_final_game_stats
                     .iter()
-                    .filter(|f| {
-                        !matches!(
-                            f.status.status_icon_type,
-                            PlayerInFixtureStatusIconType::PENDING
-                        )
-                    })
-                    .map(|f| Game {
-                        date: f.fixture.start_date.clone(),
-                        did_play: matches!(f.status.status_icon_type, PlayerInFixtureStatusIconType::FINAL_SCORE),
-                        score: f.score.round() as u64,
+                    .map(|gs| Game {
+                        date: gs.game.start_date.clone(),
+                        // Deprecated: maybe not usefull anymore
+                        did_play: match &gs.detailed_stats {
+                            Some(ds) => ds.seconds_played > 0,
+                            None => false,
+                        },
+                        minutes_played: match &gs.detailed_stats {
+                            Some(ds) => ds.seconds_played / 60,
+                            None => 0,
+                        },
+                        score: gs.score.round() as u64,
                     })
                     .collect(),
             })
