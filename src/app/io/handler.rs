@@ -9,7 +9,7 @@ use crate::{
         task::{
             load_player_prices::LoadPlayerPricesTask, load_players::LoadPlayersTask,
             load_players_stats::LoadPlayersStatsTask,
-            refresh_players_details::RefreshPlayersDetailsTask, run_strategies::RunStrategiesTask,
+            refresh_players_details::RefreshPlayersDetailsTask, run_strategies::RunStrategiesTask, load_players_injury::LoadPlayersInjuryTask,
         },
         App,
     },
@@ -42,8 +42,9 @@ impl IoAsyncHandler {
     pub async fn handle_io_event(&mut self, io_event: IoEvent) {
         let result = match io_event {
             IoEvent::Initialize => self.do_initialize().await,
-            IoEvent::LoadPlayerDetails(slug) => self.do_load_player_prices(&slug).await,
+            IoEvent::LoadPlayerPrices(slug) => self.do_load_player_prices(&slug).await,
             IoEvent::LoadPlayersStats(slugs) => self.do_load_players_stats(slugs).await,
+            IoEvent::LoadPlayersInjury(slugs) => self.do_load_players_injury(slugs).await,
             IoEvent::RunStrategies(slug) => self.do_run_strategies(&slug).await,
         };
 
@@ -74,6 +75,18 @@ impl IoAsyncHandler {
         let task_manager = resolve!(MainTaskManager);
         task_manager
             .run(Box::new(LoadPlayersStatsTask::new(self.app.clone(), slugs)))
+            .await;
+
+        Ok(())
+    }
+
+    async fn do_load_players_injury(
+        &mut self,
+        slugs: Vec<String>,
+    ) -> Result<(), IoAsyncHandlerError> {
+        let task_manager = resolve!(MainTaskManager);
+        task_manager
+            .run(Box::new(LoadPlayersInjuryTask::new(self.app.clone(), slugs)))
             .await;
 
         Ok(())

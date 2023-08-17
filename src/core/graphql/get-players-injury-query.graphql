@@ -1,0 +1,13 @@
+query GetPlayersInjury($slugs: [String!]) {
+  
+  nbaPlayers(slugs: $slugs) {
+    slug
+    playerInjury {
+      description
+      status
+      comment
+      startDate
+      updateDateTime
+    }
+  }
+}

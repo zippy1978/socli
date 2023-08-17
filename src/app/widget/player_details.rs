@@ -2,9 +2,7 @@ use chrono::DateTime;
 use ratatui::{
     prelude::{Alignment, Constraint, Direction, Layout},
     style::{Color, Style, Stylize},
-    widgets::{
-        block::Title, Bar, BarChart, BarGroup, Block, BorderType, Borders, Padding, Paragraph,
-    },
+    widgets::{block::Title, Bar, BarChart, BarGroup, Block, BorderType, Borders, Paragraph},
 };
 
 use crate::core::model::{currency::Currency, player::Player};
@@ -13,12 +11,17 @@ use super::{label::Label, Renderable};
 
 pub struct PlayerDetails {
     player: Option<Player>,
+    players: Vec<Player>,
     focused: bool,
 }
 
 impl PlayerDetails {
-    pub fn new(player: Option<Player>, focused: bool) -> Self {
-        Self { player, focused }
+    pub fn new(player: Option<Player>, players: Vec<Player>, focused: bool) -> Self {
+        Self {
+            player,
+            players,
+            focused,
+        }
     }
 
     fn render_summary<B: ratatui::backend::Backend>(
@@ -34,20 +37,24 @@ impl PlayerDetails {
             .split(area);
 
         // Block
+        let player_name = match &self.player {
+            Some(p) => match &p.injury {
+                Some(_) => format!("{} 🚑", &p.display_name),
+                None => p.display_name.clone(),
+            },
+            None => "".to_string(),
+        };
         let block = Block::default()
             .borders(Borders::BOTTOM)
             .title(" 👤")
-            .title(Title::from(match &self.player{
-                Some(p) => &p.display_name,
-                None => "",
-            }.fg(Color::Yellow)).alignment(Alignment::Left));
+            .title(Title::from(player_name.fg(Color::Yellow)).alignment(Alignment::Left));
         f.render_widget(block, area);
 
-        self.render_player_summary(f, layout[0]);
-        self.render_price_summary(f, layout[1]);
+        self.render_left_col_summary(f, layout[0]);
+        self.render_right_col_summary(f, layout[1]);
     }
 
-    fn render_player_summary<B: ratatui::backend::Backend>(
+    fn render_left_col_summary<B: ratatui::backend::Backend>(
         &mut self,
         f: &mut ratatui::Frame<B>,
         area: ratatui::layout::Rect,
@@ -57,6 +64,7 @@ impl PlayerDetails {
             .direction(Direction::Vertical)
             .constraints(
                 [
+                    Constraint::Length(1),
                     Constraint::Length(1),
                     Constraint::Length(1),
                     Constraint::Length(1),
@@ -92,9 +100,36 @@ impl PlayerDetails {
             }
         }
         score.render(f, layout[2]);
+
+        // Rank
+        let mut rank = Label::new(Some("Rank".into()), None);
+        if let Some(player) = &self.player {
+            let all_scores_loaded = self.players.iter().find(|p| p.stats.is_none()).is_none();
+            if player.stats.is_some() {
+                if all_scores_loaded {
+                    let mut sorted_players = self.players.clone();
+                    sorted_players.sort_by(|a, b| {
+                        b.stats
+                            .as_ref()
+                            .unwrap()
+                            .score
+                            .cmp(&a.stats.as_ref().unwrap().score)
+                    });
+                    let player_rank = sorted_players
+                        .iter()
+                        .position(|p| p.slug == player.slug)
+                        .unwrap()
+                        + 1;
+                    rank = Label::new(Some("Rank".into()), Some(player_rank.to_string()));
+                } else {
+                    rank = Label::new(Some("Rank".into()), Some("Still loading scores...".to_string())).fg_text(Color::DarkGray);
+                }
+            }
+        }
+        rank.render(f, layout[3]);
     }
 
-    fn render_price_summary<B: ratatui::backend::Backend>(
+    fn render_right_col_summary<B: ratatui::backend::Backend>(
         &mut self,
         f: &mut ratatui::Frame<B>,
         area: ratatui::layout::Rect,
@@ -107,10 +142,30 @@ impl PlayerDetails {
                     Constraint::Length(1),
                     Constraint::Length(1),
                     Constraint::Length(1),
+                    Constraint::Length(1),
                 ]
                 .as_ref(),
             )
             .split(area);
+
+        // Injury
+        let mut injury = Label::new(Some("Injury".into()), Some("None".to_string()));
+        if let Some(player) = &self.player {
+            if let Some(i) = &player.injury {
+                injury = Label::new(
+                    Some("Injury".into()),
+                    Some(format!(
+                        "{} ({})",
+                        i.description,
+                        DateTime::parse_from_rfc3339(&i.date)
+                            .unwrap()
+                            .format("%m/%d/%Y"),
+                    )),
+                )
+                .fg_text(Color::Red);
+            }
+        }
+        injury.render(f, layout[0]);
 
         // Last sale
         let mut last_sale_price = Label::new(Some("Last Sale".into()), None);
@@ -142,7 +197,7 @@ impl PlayerDetails {
                 );
             }
         }
-        last_sale_price.render(f, layout[0]);
+        last_sale_price.render(f, layout[1]);
 
         // Last 5 Sales average
         let mut avg_sale_price = Label::new(Some("Last 5 Sales Avg.".into()), None);
@@ -155,11 +210,11 @@ impl PlayerDetails {
                 }),
             );
         }
-        avg_sale_price.render(f, layout[1]);
+        avg_sale_price.render(f, layout[2]);
 
         // Liquidity
         let mut liquidity = Label::new(Some("Liquidity".into()), Some("TODO".into()));
-        liquidity.render(f, layout[2]);
+        liquidity.render(f, layout[3]);
     }
 
     fn render_stats<B: ratatui::backend::Backend>(
@@ -242,9 +297,9 @@ impl Renderable for PlayerDetails {
             .direction(Direction::Vertical)
             .constraints(
                 [
-                    Constraint::Percentage(20),
-                    Constraint::Percentage(40),
-                    Constraint::Percentage(40),
+                    Constraint::Percentage(24),
+                    Constraint::Percentage(38),
+                    Constraint::Percentage(28),
                 ]
                 .as_ref(),
             )

@@ -8,6 +8,7 @@ fn create_player() -> Player {
         birth_date: "2003-07-22T17:15:13Z".to_string(),
         team: Some("team".to_string()),
         stats: None,
+        injury: None,
     };
 
     player.prices.push(Price {

@@ -92,10 +92,11 @@ where
                 Some(p) => Some(p.clone()),
                 None => None,
             },
+            players.clone(),
             matches!(selected_panel, Panel::Player),
         )
     } else {
-        PlayerDetails::new(None, false)
+        PlayerDetails::new(None, vec![], false)
     };
     player_details.render(rect, player_layout[1]);
 

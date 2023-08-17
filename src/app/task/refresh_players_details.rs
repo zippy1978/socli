@@ -28,7 +28,7 @@ impl Task for RefreshPlayersDetailsTask {
     async fn run(&self) {
         let mut index = 0;
 
-        let mut players_slugs_for_stats_refresh = vec![];
+        let mut players_slugs_for_refresh = vec![];
 
         loop {
             // Iterate on players every X secs and schedule a load prices task
@@ -37,19 +37,20 @@ impl Task for RefreshPlayersDetailsTask {
                 let player_count = players.len();
                 if let Some(p) = players.get(index) {
                     let slug = p.slug.clone();
-                    players_slugs_for_stats_refresh.push(slug.clone());
+                    players_slugs_for_refresh.push(slug.clone());
                     app.refresh_player_prices(index, true).await;
                     if (index + 1) == player_count {
                         index = 0;
                     } else {
                         index += 1;
                     }
-                    // Every 5, refreshes, player stats are bulk refreshed
-                    if players_slugs_for_stats_refresh.len() == 5 {
+                    // Every 5, refreshes, player stats and injury are bulk refreshed
+                    if players_slugs_for_refresh.len() == 5 {
                         
-                        app.refresh_players_stats(&players_slugs_for_stats_refresh).await;
+                        app.refresh_players_stats(&players_slugs_for_refresh).await;
+                        app.refresh_players_injury(&players_slugs_for_refresh).await;
 
-                        players_slugs_for_stats_refresh.clear();
+                        players_slugs_for_refresh.clear();
                     }
 
                 }

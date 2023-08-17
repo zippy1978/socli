@@ -3,22 +3,22 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use quartermaster::task::Task;
 
-use crate::{app::App, core::service::stats::StatsService, resolve_trait};
+use crate::{app::App, resolve_trait, core::service::injury::InjuryService};
 
-pub struct LoadPlayersStatsTask {
+pub struct LoadPlayersInjuryTask {
     app: Arc<tokio::sync::Mutex<App>>,
     slugs: Vec<String>,
 }
-impl LoadPlayersStatsTask {
+impl LoadPlayersInjuryTask {
     pub fn new(app: Arc<tokio::sync::Mutex<App>>, slugs: Vec<String>) -> Self {
         Self { app, slugs }
     }
 }
 
 #[async_trait]
-impl Task for LoadPlayersStatsTask {
+impl Task for LoadPlayersInjuryTask {
     fn name(&self) -> String {
-        "load players stats".to_string()
+        "load players injury".to_string()
     }
 
     fn id(&self) -> String {
@@ -34,14 +34,14 @@ impl Task for LoadPlayersStatsTask {
     }
 
     async fn run(&self) {
-        let stats_service = resolve_trait!(StatsService);
+        let injury_service = resolve_trait!(InjuryService);
 
-        // Get stats
-        match stats_service.get_stats(&self.slugs).await {
-            Ok(stats) => {
+        // Get injuries
+        match injury_service.get_injuries(&self.slugs).await {
+            Ok(injuries) => {
                 // Update player in app state
                 let mut app = self.app.lock().await;
-                app.state.merge_stats(stats);
+                app.state.merge_injuries(&self.slugs, injuries);
                 // After update: run strategies
                 for s in &self.slugs {
                     app.run_strategies(&s.clone()).await;
@@ -49,7 +49,7 @@ impl Task for LoadPlayersStatsTask {
             }
             Err(err) => {
                 log::error!(
-                    "Failed to load stats for {}: {}",
+                    "Failed to load injury for {}: {}",
                     &self.id(),
                     err.to_string()
                 )

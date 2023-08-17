@@ -4,7 +4,7 @@ use async_trait::async_trait;
 
 use crate::{
     core::{
-        model::{stats::Stats},
+        model::stats::Stats,
         repository::{error::RepoError, stats::StatsRepo},
     },
     resolve_trait,

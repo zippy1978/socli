@@ -21,7 +21,7 @@ impl LoadPlayerPricesTask {
 #[async_trait]
 impl Task for LoadPlayerPricesTask {
     fn name(&self) -> String {
-        "load player details".to_string()
+        "load player prices".to_string()
     }
 
     fn id(&self) -> String {

@@ -1,13 +1,13 @@
 use strum_macros::EnumIter;
 
-use crate::core::model::{decision::Decision, player::Player, price::Price, stats::Stats};
+use crate::core::model::{decision::Decision, player::Player, price::Price, stats::Stats, injury::Injury};
 
 #[derive(Clone, EnumIter, PartialEq, Eq, Copy)]
 pub enum Panel {
     Players,
     Player,
     Decisions,
-    Logs
+    Logs,
 }
 
 #[derive(Clone)]
@@ -30,20 +30,17 @@ impl AppState {
 
     pub fn update_selection(&mut self, selection: usize, panel: Panel) {
         if let Self::Initialized {
-            selected_player, 
+            selected_player,
             selected_decision,
             ..
         } = self
         {
-
             match panel {
                 Panel::Players => *selected_player = selection,
                 Panel::Decisions => *selected_decision = selection,
                 Panel::Logs => (),
                 Panel::Player => (),
             }
-
-            
         }
     }
 
@@ -69,6 +66,17 @@ impl AppState {
             for s in stats {
                 match players.iter_mut().find(|p| p.slug == s.player_slug) {
                     Some(p) => p.stats = Some(s),
+                    None => (),
+                }
+            }
+        }
+    }
+
+    pub fn merge_injuries(&mut self, player_slugs: &[String], injuries: Vec<Injury>) {
+        if let Self::Initialized { players, .. } = self {
+            for s in player_slugs {
+                match players.iter_mut().find(|p| &p.slug == s) {
+                    Some(p) => p.injury = injuries.iter().find(|i| p.slug == i.player_slug).cloned(),
                     None => (),
                 }
             }

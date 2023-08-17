@@ -123,7 +123,7 @@ impl App {
             match players.get(index) {
                 Some(p) => {
                     if force || (!force && p.prices.is_empty()) {
-                        self.dispatch(IoEvent::LoadPlayerDetails(p.slug.to_string()))
+                        self.dispatch(IoEvent::LoadPlayerPrices(p.slug.to_string()))
                             .await
                     }
                 }
@@ -164,6 +164,14 @@ impl App {
         // Trigger players stats load / update
         if let AppState::Initialized { .. } = &self.state {
             self.dispatch(IoEvent::LoadPlayersStats(player_slugs.to_vec()))
+                .await;
+        }
+    }
+
+    pub async fn refresh_players_injury(&mut self, player_slugs: &[String]) {
+        // Trigger players injury load / update
+        if let AppState::Initialized { .. } = &self.state {
+            self.dispatch(IoEvent::LoadPlayersInjury(player_slugs.to_vec()))
                 .await;
         }
     }

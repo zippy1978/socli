@@ -36,19 +36,21 @@ impl Renderable for PlayersTable {
             .map(|p| {
                 let price_delta_ratio = p.price_delta_ratio(Currency::Euro);
                 let avg_price: Option<f64> = p.price_avg(Currency::Euro, 5);
-                let (games_count, played_games_count, played_games_ratio) =
-                    match &p.stats {
-                        Some(s) => (
-                            Some(s.games.len() as u64),
-                            s.played_games_count(),
-                            s.played_games_ratio(),
-                        ),
-                        None => (None, None, None),
-                    };
+                let (games_count, played_games_count, played_games_ratio) = match &p.stats {
+                    Some(s) => (
+                        Some(s.games.len() as u64),
+                        s.played_games_count(),
+                        s.played_games_ratio(),
+                    ),
+                    None => (None, None, None),
+                };
 
                 Row::new(vec![
                     // Name
-                    Cell::from(p.display_name.clone()),
+                    Cell::from(match &p.injury {
+                        Some(_) => format!("{} 🚑", &p.display_name),
+                        None => p.display_name.clone(),
+                    }),
                     // Team
                     Cell::from(match &p.team {
                         Some(t) => t.clone(),

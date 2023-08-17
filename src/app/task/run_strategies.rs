@@ -3,7 +3,11 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use quartermaster::task::Task;
 
-use crate::{app::App, core::{service::{strategy::StrategyService}, model::player::Player}, resolve_trait};
+use crate::{
+    app::App,
+    core::{model::player::Player, service::strategy::StrategyService},
+    resolve_trait,
+};
 
 pub struct RunStrategiesTask {
     app: Arc<tokio::sync::Mutex<App>>,
@@ -34,7 +38,11 @@ impl Task for RunStrategiesTask {
                 app.state.merge_decisions(&self.player.slug, decisions);
             }
             Err(e) => {
-                log::error!("Failed to run strategies on {}: {}", self.player.slug, e.to_string())
+                log::error!(
+                    "Failed to run strategies on {}: {}",
+                    self.player.slug,
+                    e.to_string()
+                )
             }
         }
     }

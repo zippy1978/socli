@@ -135,6 +135,12 @@ export function decide(player) {
 			},
 			...
 		]
+	},
+	injury?: {
+		date: string,
+		update_date?: string,
+		description: string,
+		comment: string,
 	}
 }
 ```

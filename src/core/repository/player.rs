@@ -94,6 +94,7 @@ impl PlayerRepoImpl {
                 },
                 prices: vec![],
                 stats: None,
+                injury: None,
             });
         }
         Ok(players)

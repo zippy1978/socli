@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use rquickjs::IntoJs;
 use serde::{Deserialize, Serialize};
 
-use super::{currency::Currency, price::Price, stats::Stats};
+use super::{currency::Currency, price::Price, stats::Stats, injury::Injury};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, IntoJs)]
 pub struct Player {
@@ -12,6 +12,7 @@ pub struct Player {
     pub team: Option<String>,
     pub prices: Vec<Price>,
     pub stats: Option<Stats>,
+    pub injury: Option<Injury>,
 }
 
 impl Player {

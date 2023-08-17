@@ -6,11 +6,23 @@ use dilib::{
     add_singleton_trait,
     global::{init_container, InitContainerError},
 };
-use quartermaster::{store::memory::InMemoryTaskStore, manager::TaskManager};
+use quartermaster::{manager::TaskManager, store::memory::InMemoryTaskStore};
 
 use crate::core::{
-    repository::{player::{PlayerRepo, PlayerRepoImpl}, storage::{StorageRepo, StorageRepoImpl}, price::{PriceRepo, PriceRepoImpl}, stats::{StatsRepo, StatsRepoImpl}},
-    service::{player::{PlayerService, PlayerServiceImpl}, price::{PriceService, PriceServiceImpl}, stats::{StatsService, StatsServiceImpl}, strategy::{StrategyService, StrategyServiceImpl}},
+    repository::{
+        injury::{InjuryRepo, InjuryRepoImpl},
+        player::{PlayerRepo, PlayerRepoImpl},
+        price::{PriceRepo, PriceRepoImpl},
+        stats::{StatsRepo, StatsRepoImpl},
+        storage::{StorageRepo, StorageRepoImpl},
+    },
+    service::{
+        injury::{InjuryService, InjuryServiceImpl},
+        player::{PlayerService, PlayerServiceImpl},
+        price::{PriceService, PriceServiceImpl},
+        stats::{StatsService, StatsServiceImpl},
+        strategy::{StrategyService, StrategyServiceImpl},
+    },
 };
 
 #[macro_export]
@@ -50,12 +62,8 @@ pub type MainTaskManager = TaskManager<InMemoryTaskStore>;
 /// Provided by https://github.com/Neo-Ciber94/dilib-rs#bind-trait-to-implementation.
 pub async fn setup_container<'a>(strategies_dir: &str) -> Result<(), InitContainerError> {
     let init_result = init_container(|container| {
-
         // Task manager
-        let task_manager = TaskManager::new(
-            InMemoryTaskStore::new("task manager"),
-            2,
-        );
+        let task_manager = TaskManager::new(InMemoryTaskStore::new("task manager"), 2);
         container.add_singleton(task_manager).unwrap();
 
         // Repositories
@@ -63,19 +71,19 @@ pub async fn setup_container<'a>(strategies_dir: &str) -> Result<(), InitContain
         add_singleton_trait!(container, PriceRepo => PriceRepoImpl::new()).unwrap();
         add_singleton_trait!(container, StorageRepo => StorageRepoImpl::new()).unwrap();
         add_singleton_trait!(container, StatsRepo => StatsRepoImpl::new()).unwrap();
+        add_singleton_trait!(container, InjuryRepo => InjuryRepoImpl::new()).unwrap();
 
         // Services
         add_singleton_trait!(container, PlayerService => PlayerServiceImpl{}).unwrap();
         add_singleton_trait!(container, PriceService => PriceServiceImpl{}).unwrap();
         add_singleton_trait!(container, StatsService => StatsServiceImpl{}).unwrap();
+        add_singleton_trait!(container, InjuryService => InjuryServiceImpl{}).unwrap();
         add_singleton_trait!(container, StrategyService => StrategyServiceImpl::new(strategies_dir)).unwrap();
     });
 
     // Start task manager
     if init_result.is_ok() {
-        resolve!(MainTaskManager)
-            .start()
-            .await;
+        resolve!(MainTaskManager).start().await;
     }
 
     // Result
