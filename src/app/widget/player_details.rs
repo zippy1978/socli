@@ -104,27 +104,18 @@ impl PlayerDetails {
         // Rank
         let mut rank = Label::new(Some("Rank".into()), None);
         if let Some(player) = &self.player {
-            let all_scores_loaded = self.players.iter().find(|p| p.stats.is_none()).is_none();
-            if player.stats.is_some() {
-                if all_scores_loaded {
-                    let mut sorted_players = self.players.clone();
-                    sorted_players.sort_by(|a, b| {
-                        b.stats
-                            .as_ref()
-                            .unwrap()
-                            .score
-                            .cmp(&a.stats.as_ref().unwrap().score)
-                    });
-                    let player_rank = sorted_players
-                        .iter()
-                        .position(|p| p.slug == player.slug)
-                        .unwrap()
-                        + 1;
-                    rank = Label::new(Some("Rank".into()), Some(player_rank.to_string()));
-                } else {
-                    rank = Label::new(Some("Rank".into()), Some("Still loading scores...".to_string())).fg_text(Color::DarkGray);
+            match player.rank(&self.players) {
+                Some(r) => {
+                    rank = Label::new(Some("Rank".into()), Some(r.to_string()));
                 }
-            }
+                None => {
+                    rank = Label::new(
+                        Some("Rank".into()),
+                        Some("Still loading scores...".to_string()),
+                    )
+                    .fg_text(Color::DarkGray);
+                }
+            };
         }
         rank.render(f, layout[3]);
     }
@@ -167,54 +158,17 @@ impl PlayerDetails {
         }
         injury.render(f, layout[0]);
 
-        // Last sale
-        let mut last_sale_price = Label::new(Some("Last Sale".into()), None);
-        if let Some(player) = &self.player {
-            if !player.prices.is_empty() {
-                let price_delta_ratio = player.price_delta_ratio(Currency::Euro);
-                let text = format!(
-                    "{} ({})",
-                    match player.prices.get(0) {
-                        Some(price) => format!("{} €", &price.eur),
-                        None => "-".to_string(),
-                    },
-                    match price_delta_ratio {
-                        Some(pd) => format!("{:.2}%", pd * 100.0),
-                        None => "-".to_string(),
-                    }
-                );
-                last_sale_price = Label::new(Some("Last Sale".into()), Some(text)).fg_text(
-                    match price_delta_ratio {
-                        Some(d) => {
-                            if d >= 0.0 {
-                                Color::Green
-                            } else {
-                                Color::Red
-                            }
-                        }
-                        None => Color::White,
-                    },
-                );
-            }
-        }
-        last_sale_price.render(f, layout[1]);
+        // Country
+        let mut country = Label::new(Some("Country".into()), Some("TODO".into()));
+        country.render(f, layout[1]);
 
-        // Last 5 Sales average
-        let mut avg_sale_price = Label::new(Some("Last 5 Sales Avg.".into()), None);
-        if let Some(player) = &self.player {
-            avg_sale_price = Label::new(
-                Some("Last 5 Sales Avg.".into()),
-                Some(match player.price_avg(Currency::Euro, 5) {
-                    Some(avg) => format!("{:.2} €", avg),
-                    None => "-".to_string(),
-                }),
-            );
-        }
-        avg_sale_price.render(f, layout[2]);
+        // Number
+        let mut number = Label::new(Some("Number".into()), Some("TODO".into()));
+        number.render(f, layout[2]);
 
-        // Liquidity
-        let mut liquidity = Label::new(Some("Liquidity".into()), Some("TODO".into()));
-        liquidity.render(f, layout[3]);
+        // Positions
+        let mut positions = Label::new(Some("Positions".into()), Some("TODO".into()));
+        positions.render(f, layout[3]);
     }
 
     fn render_stats<B: ratatui::backend::Backend>(
@@ -284,6 +238,154 @@ impl PlayerDetails {
             }
         }
     }
+
+    fn render_prices<B: ratatui::backend::Backend>(
+        &mut self,
+        f: &mut ratatui::Frame<B>,
+        area: ratatui::layout::Rect,
+    ) {
+        // Layout
+        let layout = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+            .margin(1)
+            .split(area);
+
+        // Block
+        let block = Block::default()
+            .title(" 💵")
+            .title(Title::from("Prices".fg(Color::Yellow)).alignment(Alignment::Left));
+        f.render_widget(block, area);
+
+        self.render_prices_chart(f, layout[0]);
+        self.render_prices_summary(f, layout[1]);
+    }
+
+    fn render_prices_summary<B: ratatui::backend::Backend>(
+        &mut self,
+        f: &mut ratatui::Frame<B>,
+        area: ratatui::layout::Rect,
+    ) {
+        // Layout
+        let layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(
+                [
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                ]
+                .as_ref(),
+            )
+            .split(area);
+
+        // Last sale
+        let mut last_sale_price = Label::new(Some("Last Sale".into()), None);
+        if let Some(player) = &self.player {
+            if !player.prices.is_empty() {
+                let price_delta_ratio = player.price_delta_ratio(Currency::Euro);
+                let text = format!(
+                    "{} ({})",
+                    match player.prices.get(0) {
+                        Some(price) => format!("{} €", &price.eur),
+                        None => "-".to_string(),
+                    },
+                    match price_delta_ratio {
+                        Some(pd) => format!("{:.2}%", pd * 100.0),
+                        None => "-".to_string(),
+                    }
+                );
+                last_sale_price = Label::new(Some("Last Sale".into()), Some(text)).fg_text(
+                    match price_delta_ratio {
+                        Some(d) => {
+                            if d >= 0.0 {
+                                Color::Green
+                            } else {
+                                Color::Red
+                            }
+                        }
+                        None => Color::White,
+                    },
+                );
+            }
+        }
+        last_sale_price.render(f, layout[0]);
+
+        // Last 5 Sales average
+        let mut avg_sale_price = Label::new(Some("Last 5 Sales Avg.".into()), None);
+        if let Some(player) = &self.player {
+            avg_sale_price = Label::new(
+                Some("Last 5 Sales Avg.".into()),
+                Some(match player.price_avg(Currency::Euro, 5) {
+                    Some(avg) => format!("{:.2} €", avg),
+                    None => "-".to_string(),
+                }),
+            );
+        }
+        avg_sale_price.render(f, layout[1]);
+
+        // Liquidity
+        let mut liquidity = Label::new(Some("Liquidity".into()), Some("TODO".into()));
+        liquidity.render(f, layout[2]);
+    }
+
+    fn render_prices_chart<B: ratatui::backend::Backend>(
+        &mut self,
+        f: &mut ratatui::Frame<B>,
+        area: ratatui::layout::Rect,
+    ) {
+        // Layout
+        let layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([Constraint::Percentage(90), Constraint::Length(1)].as_ref())
+            .split(area);
+
+        // Bar chart
+        let bars = match &self.player {
+            Some(player) => player
+                .prices
+                .iter()
+                .rev()
+                .map(|p| {
+                    let price_date = DateTime::parse_from_rfc3339(&p.date).unwrap();
+                    let formatted = price_date.format("%m/%d").to_string();
+                    Bar::default()
+                        .value(((p.eur.parse::<f32>().unwrap() * 100.0).round() as u32).into())
+                        .label(formatted.into())
+                })
+                .collect::<Vec<Bar>>(),
+
+            None => vec![],
+        };
+
+        let bar_chart = BarChart::default()
+            .data(BarGroup::default().bars(&bars))
+            .style(Style::default())
+            .bar_style(Style::default().fg(Color::Yellow))
+            .value_style(Style::default().fg(Color::Yellow).bg(Color::Yellow))
+            .bar_width((layout[0].width) / 6);
+        f.render_widget(bar_chart, layout[0]);
+
+        // Prices labels
+        if let Some(player) = &self.player {
+            let mut constraints = vec![];
+            for _ in 0..5 {
+                constraints.push(Constraint::Length(layout[1].width / 6));
+                // Spacer
+                constraints.push(Constraint::Length(1));
+            }
+            let price_labels_layout = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints(constraints)
+                .split(layout[1]);
+            for (i, p) in player.prices.iter().rev().enumerate() {
+                let p = Paragraph::new(format!("{} €", p.eur))
+                    .alignment(Alignment::Center)
+                    .style(Style::default().fg(Color::White));
+                f.render_widget(p, price_labels_layout[i * 2]);
+            }
+        }
+    }
 }
 
 impl Renderable for PlayerDetails {
@@ -326,5 +428,6 @@ impl Renderable for PlayerDetails {
         // Sub components
         self.render_summary(f, layout[0]);
         self.render_stats(f, layout[1]);
+        self.render_prices(f, layout[2]);
     }
 }

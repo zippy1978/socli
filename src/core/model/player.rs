@@ -61,4 +61,27 @@ impl Player {
             None => 0,
         }
     }
+
+    pub fn rank(&self, players: &[Player]) ->Option<usize> {
+        let all_scores_loaded = players.iter().find(|p| p.stats.is_none()).is_none();
+            if self.stats.is_some() {
+                if all_scores_loaded {
+                    let mut sorted_players = players.to_vec();
+                    sorted_players.sort_by(|a, b| {
+                        b.stats
+                            .as_ref()
+                            .unwrap()
+                            .score
+                            .cmp(&a.stats.as_ref().unwrap().score)
+                    });
+                    let player_rank = sorted_players
+                        .iter()
+                        .position(|p| p.slug == self.slug)
+                        .unwrap()
+                        + 1;
+                    return Some(player_rank);
+                }
+            }
+            None
+    }
 }
