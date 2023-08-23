@@ -1,6 +1,8 @@
 use strum_macros::EnumIter;
 
-use crate::core::model::{decision::Decision, player::Player, price::Price, stats::Stats, injury::Injury};
+use crate::core::model::{
+    decision::Decision, injury::Injury, player::Player, price::Price, stats::Stats,
+};
 
 #[derive(Clone, EnumIter, PartialEq, Eq, Copy)]
 pub enum Panel {
@@ -44,6 +46,24 @@ impl AppState {
         }
     }
 
+    pub fn select_decision_player(&mut self) {
+        if let Self::Initialized {
+            players,
+            selected_player,
+            decisions,
+            selected_decision,
+            ..
+        } = self
+        {
+            if let Some(decision) = decisions.get(*selected_decision) {
+                // Figure out player index from slug
+                if let Some(index) = players.iter().position(|p| p.slug == decision.player_slug) {
+                    *selected_player = index;
+                }
+            }
+        }
+    }
+
     pub fn get_player(&self, player_slug: &str) -> Option<&Player> {
         if let Self::Initialized { players, .. } = self {
             players.iter().find(|p| p.slug == player_slug)
@@ -76,7 +96,9 @@ impl AppState {
         if let Self::Initialized { players, .. } = self {
             for s in player_slugs {
                 match players.iter_mut().find(|p| &p.slug == s) {
-                    Some(p) => p.injury = injuries.iter().find(|i| p.slug == i.player_slug).cloned(),
+                    Some(p) => {
+                        p.injury = injuries.iter().find(|i| p.slug == i.player_slug).cloned()
+                    }
                     None => (),
                 }
             }

@@ -243,6 +243,11 @@ impl App {
         if matches!(panel, Panel::Players) {
             self.refresh_player_prices(selection, false).await;
         }
+
+        // Change player selection when switching to decisions
+        if matches!(panel, Panel::Decisions) {
+            self.state.select_decision_player();
+        }
     }
 
     pub fn error(&mut self, msg: String) {
