@@ -9,6 +9,9 @@ fn create_player() -> Player {
         team: Some("team".to_string()),
         stats: None,
         injury: None,
+        positions: vec![],
+        country: "US".to_string(),
+        number: 23,
     };
 
     player.prices.push(Price {

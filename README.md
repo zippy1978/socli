@@ -115,7 +115,10 @@ export function decide(player) {
 	slug: string,
 	display_name: string,
 	birth_date: string,
+	country: string,
 	team?: string,
+	positions : [string],
+	number: number,
 	prices: [
 		{
 			date: string,

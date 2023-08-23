@@ -95,6 +95,13 @@ impl PlayerRepoImpl {
                 prices: vec![],
                 stats: None,
                 injury: None,
+                positions: p
+                    .positions
+                    .iter()
+                    .map(|p| format!("{:?}", p).strip_prefix("NBA_").unwrap().to_string())
+                    .collect(),
+                country: p.birth_place_country,
+                number: p.shirt_number,
             });
         }
         Ok(players)
@@ -159,7 +166,7 @@ impl PlayerRepo for PlayerRepoImpl {
         let mut result = self.get_players_page(Some(page_size), None).await?;
         players_set.extend(result.0);
         log::debug!("Loaded players count is: {}", players_set.len());
-        while result.1.is_some() && retry_count <= 10  {
+        while result.1.is_some() && retry_count <= 10 {
             let cursor = result.1.clone().unwrap();
             log::debug!("Loading player page at cursor {}", &cursor);
             result = self
@@ -170,7 +177,10 @@ impl PlayerRepo for PlayerRepoImpl {
             new_count = players_set.len() - loaded_count;
             if new_count == 0 {
                 retry_count += 1;
-                log::debug!("No new player found on page: retrying (retry count is {})", retry_count);
+                log::debug!(
+                    "No new player found on page: retrying (retry count is {})",
+                    retry_count
+                );
             } else {
                 retry_count = 0;
             }

@@ -13,6 +13,9 @@ pub struct Player {
     pub prices: Vec<Price>,
     pub stats: Option<Stats>,
     pub injury: Option<Injury>,
+    pub positions: Vec<String>,
+    pub country: String,
+    pub number: i64,
 }
 
 impl Player {

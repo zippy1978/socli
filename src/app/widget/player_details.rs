@@ -159,15 +159,25 @@ impl PlayerDetails {
         injury.render(f, layout[0]);
 
         // Country
-        let mut country = Label::new(Some("Country".into()), Some("TODO".into()));
+        let mut country = Label::new(Some("Country".into()), None);
+        if let Some(player) = &self.player {
+            country = Label::new(Some("Country".into()), Some(player.country.clone()));
+        }
         country.render(f, layout[1]);
 
         // Number
-        let mut number = Label::new(Some("Number".into()), Some("TODO".into()));
+        let mut number = Label::new(Some("Number".into()), None);
+        if let Some(player) = &self.player {
+            number = Label::new(Some("Number".into()), Some(player.number.to_string()));
+        }
+
         number.render(f, layout[2]);
 
         // Positions
-        let mut positions = Label::new(Some("Positions".into()), Some("TODO".into()));
+        let mut positions = Label::new(Some("Positions".into()), None);
+        if let Some(player) = &self.player {
+            positions = Label::new(Some("Positions".into()), Some(player.positions.join(",")));
+        }
         positions.render(f, layout[3]);
     }
 

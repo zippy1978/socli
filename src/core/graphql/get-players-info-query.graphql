@@ -1,8 +1,11 @@
 query GetPlayersInfo($slugs: [String!]) {
   
   nbaPlayers(slugs: $slugs) {
+    shirtNumber
+    birthPlaceCountry
     birthDate
     displayName
+    positions
     slug
     team {
       name
