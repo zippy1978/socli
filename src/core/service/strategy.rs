@@ -114,10 +114,13 @@ impl StrategyService for StrategyServiceImpl {
         let mut decisions = vec![];
         let paths = fs::read_dir(scripts_path).unwrap();
         for path in paths {
-            let strategy_name = self.extract_strategy_name(&path.as_ref().unwrap().path());
-            if let Ok(code) = fs::read_to_string(path.unwrap().path()) {
-                if let Some(decision) = self.run(player, &strategy_name, &code).await? {
-                    decisions.push(decision);
+            // Filter out sub directories
+            if !path.as_ref().unwrap().path().is_dir() {
+                let strategy_name = self.extract_strategy_name(&path.as_ref().unwrap().path());
+                if let Ok(code) = fs::read_to_string(path.unwrap().path()) {
+                    if let Some(decision) = self.run(player, &strategy_name, &code).await? {
+                        decisions.push(decision);
+                    }
                 }
             }
         }
