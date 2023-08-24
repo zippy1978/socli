@@ -1,8 +1,8 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, FixedOffset, Utc};
 use rquickjs::IntoJs;
 use serde::{Deserialize, Serialize};
 
-use super::{currency::Currency, price::Price, stats::Stats, injury::Injury};
+use super::{currency::Currency, injury::Injury, price::Price, stats::Stats};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, IntoJs)]
 pub struct Player {
@@ -57,7 +57,9 @@ impl Player {
     }
 
     pub fn age(&self) -> u32 {
-        let birth_date = DateTime::parse_from_rfc3339(&self.birth_date).unwrap().with_timezone(&Utc);
+        let birth_date = DateTime::parse_from_rfc3339(&self.birth_date)
+            .unwrap()
+            .with_timezone(&Utc);
         let now = chrono::Utc::now().date_naive();
         match now.years_since(birth_date.date_naive()) {
             Some(a) => a,
@@ -65,26 +67,49 @@ impl Player {
         }
     }
 
-    pub fn rank(&self, players: &[Player]) ->Option<usize> {
+    pub fn rank(&self, players: &[Player]) -> Option<usize> {
         let all_scores_loaded = players.iter().find(|p| p.stats.is_none()).is_none();
-            if self.stats.is_some() {
-                if all_scores_loaded {
-                    let mut sorted_players = players.to_vec();
-                    sorted_players.sort_by(|a, b| {
-                        b.stats
-                            .as_ref()
-                            .unwrap()
-                            .score
-                            .cmp(&a.stats.as_ref().unwrap().score)
-                    });
-                    let player_rank = sorted_players
-                        .iter()
-                        .position(|p| p.slug == self.slug)
+        if self.stats.is_some() {
+            if all_scores_loaded {
+                let mut sorted_players = players.to_vec();
+                sorted_players.sort_by(|a, b| {
+                    b.stats
+                        .as_ref()
                         .unwrap()
-                        + 1;
-                    return Some(player_rank);
-                }
+                        .score
+                        .cmp(&a.stats.as_ref().unwrap().score)
+                });
+                let player_rank = sorted_players
+                    .iter()
+                    .position(|p| p.slug == self.slug)
+                    .unwrap()
+                    + 1;
+                return Some(player_rank);
             }
-            None
+        }
+        None
+    }
+
+    pub fn sales_hours_interval_avg(&self) -> Option<f64> {
+        if !self.prices.is_empty() {
+            let sales_dates = self
+                .prices
+                .iter()
+                .rev()
+                .map(|p| DateTime::parse_from_rfc3339(&p.date).unwrap())
+                .collect::<Vec<DateTime<FixedOffset>>>();
+
+            let mut intervals = Vec::new();
+
+            for i in 0..sales_dates.len() - 1 {
+                let interval = sales_dates[i + 1].signed_duration_since(sales_dates[i]);
+                intervals.push(interval);
+            }
+
+            let total_duration: i64 = intervals.iter().map(|d| d.num_hours()).sum();
+            let average_duration = total_duration as f64 / intervals.len() as f64;
+            return Some(average_duration);
+        }
+        None
     }
 }

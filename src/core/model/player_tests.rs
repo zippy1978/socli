@@ -18,13 +18,13 @@ fn create_player() -> Player {
         eur: "40".to_string(),
         usd: "50".to_string(),
         player_slug: "slug".to_string(),
-        date: "2023-07-22T17:15:13Z".to_string(),
+        date: "2023-07-22T16:15:13Z".to_string(),
     });
     player.prices.push(Price {
         eur: "60".to_string(),
         usd: "70".to_string(),
         player_slug: "slug".to_string(),
-        date: "2023-07-22T17:15:13Z".to_string(),
+        date: "2023-07-22T15:15:13Z".to_string(),
     });
 
     return player;
@@ -85,4 +85,12 @@ fn price_avg_under_max_count() {
 fn age() {
     let player = create_player();
     assert_eq!(player.age(), 20);
+}
+
+#[test]
+fn sales_hours_interval_avg() {
+    let mut player = create_player();
+    assert_eq!(player.sales_hours_interval_avg(), Some(1.0));
+    player.prices = vec![];
+    assert_eq!(player.sales_hours_interval_avg(), None);
 }

@@ -334,9 +334,18 @@ impl PlayerDetails {
         }
         avg_sale_price.render(f, layout[1]);
 
-        // Liquidity
-        let mut liquidity = Label::new(Some("Liquidity".into()), Some("TODO".into()));
-        liquidity.render(f, layout[2]);
+        // Sales Interval Avg
+        let mut sales_interval_avg =
+            Label::new(Some("Sales Interval Avg.".into()), None);
+        if let Some(player) = &self.player {
+            if let Some(avg) = player.sales_hours_interval_avg() {
+                sales_interval_avg = Label::new(
+                    Some("Sales Interval Avg.".into()),
+                    Some(format!("{:.2} hours", avg)),
+                );
+            }
+        }
+        sales_interval_avg.render(f, layout[2]);
     }
 
     fn render_prices_chart<B: ratatui::backend::Backend>(
