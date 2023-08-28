@@ -1231,7 +1231,6 @@ dependencies = [
  "crossterm 0.26.1",
  "indoc",
  "paste",
- "termion 2.0.1",
  "time 0.3.25",
  "unicode-segmentation",
  "unicode-width",
@@ -1568,7 +1567,7 @@ dependencies = [
 
 [[package]]
 name = "socli"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1678,18 +1677,6 @@ name = "termion"
 version = "1.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "077185e2eac69c3f8379a4298e1e07cd36beb962290d4a51199acf0fdc10607e"
-dependencies = [
- "libc",
- "numtoa",
- "redox_syscall",
- "redox_termios",
-]
-
-[[package]]
-name = "termion"
-version = "2.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "659c1f379f3408c7e5e84c7d0da6d93404e3800b6b9d063ba24436419302ec90"
 dependencies = [
  "libc",
  "numtoa",
@@ -1866,16 +1853,16 @@ checksum = "ccdd26cbd674007e649a272da4475fb666d3aa0ad0531da7136db6fab0e5bad1"
 dependencies = [
  "bitflags 1.3.2",
  "cassowary",
- "termion 1.5.6",
+ "termion",
  "unicode-segmentation",
  "unicode-width",
 ]
 
 [[package]]
 name = "tui-logger"
-version = "0.9.3"
+version = "0.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84a08e01d4166dd1d5d69240c33281f2e8f5b1de78d6971b02cef3cfb3c36b04"
+checksum = "e9b303440de7c259d03e113a808f2f8ca3cd9097840663dc484b12f19c6f44a6"
 dependencies = [
  "chrono",
  "fxhash",
@@ -1883,6 +1870,7 @@ dependencies = [
  "log",
  "parking_lot",
  "ratatui",
+ "termion",
  "tui",
 ]
 

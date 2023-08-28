@@ -7,7 +7,7 @@
 - Player stats retrival and browsing
 - JavaScript based decision engine
 
-> Does only work for with `limited` rarity levle cards at the moment.
+> Does only work for with `limited` rarity level cards at the moment.
 
 
 
