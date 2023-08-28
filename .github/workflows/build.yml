@@ -1,0 +1,35 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.cargo
+        key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: ${{ runner.os }}-rust-
+
+    - name: Install Rust and Cargo
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+
+    - name: Install cargo-tarpaulin
+      run: cargo install cargo-tarpaulin
+      env:
+        RUSTFLAGS: "-C link-dead-code"
+    
+    - name: Build and Test with Coverage
+      # use --fail-under 30 (to fail under coverage level)
+      run: cargo tarpaulin --ciserver github_actions
+      env:
+        CARGO_TERM_VERBOSE: true
