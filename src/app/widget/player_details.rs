@@ -148,9 +148,10 @@ impl PlayerDetails {
                     Some(format!(
                         "{} ({})",
                         i.description,
-                        DateTime::parse_from_rfc3339(&i.date)
-                            .unwrap()
-                            .format("%m/%d/%Y"),
+                        match DateTime::parse_from_rfc3339(&i.date) {
+                            Ok(d) => d.format("%m/%d/%Y").to_string(),
+                            Err(_) => "Unknown".to_string(),
+                        },
                     )),
                 )
                 .fg_text(Color::Red);
@@ -335,8 +336,7 @@ impl PlayerDetails {
         avg_sale_price.render(f, layout[1]);
 
         // Sales Interval Avg
-        let mut sales_interval_avg =
-            Label::new(Some("Sales Interval Avg.".into()), None);
+        let mut sales_interval_avg = Label::new(Some("Sales Interval Avg.".into()), None);
         if let Some(player) = &self.player {
             if let Some(avg) = player.sales_hours_interval_avg() {
                 sales_interval_avg = Label::new(
