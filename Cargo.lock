@@ -1157,7 +1157,7 @@ dependencies = [
 [[package]]
 name = "quartermaster"
 version = "0.1.0"
-source = "git+https://github.com/7seas-quest/quartermaster.git?tag=0.1.0#141b0d04be3680f6040ced22964fa2aaffe82ad2"
+source = "git+https://github.com/zippy1978/quartermaster.git?tag=0.1.0#141b0d04be3680f6040ced22964fa2aaffe82ad2"
 dependencies = [
  "async-trait",
  "deadqueue",
@@ -1562,7 +1562,7 @@ dependencies = [
 
 [[package]]
 name = "socli"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "async-trait",
  "chrono",

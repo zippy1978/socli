@@ -1,3 +1,5 @@
+use chrono::{DateTime, Utc};
+
 use super::{currency::Currency, player::Player, price::Price};
 
 fn create_player() -> Player {
@@ -84,7 +86,10 @@ fn price_avg_under_max_count() {
 #[test]
 fn age() {
     let player = create_player();
-    assert_eq!(player.age(), 20);
+    let now = chrono::Utc::now().date_naive();
+    let birth_date = DateTime::parse_from_rfc3339(&player.birth_date).unwrap().with_timezone(&Utc);
+    let expected_age = now.years_since(birth_date.date_naive()).unwrap_or(0);
+    assert_eq!(player.age(), expected_age);
 }
 
 #[test]
